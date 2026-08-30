@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project VoyageAI v0.5</title>
+<style>
+:root{
+  --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
+  --good:#18835d;--goodsoft:#eef9f4;--warn:#b96d00;--warnsoft:#fff7ea;--dark:#152238;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#fff;color:var(--ink)}
+button,textarea,input{font:inherit}button{cursor:pointer}
+.shell{max-width:1180px;margin:auto;padding:0 22px 72px}
+nav{height:70px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.logo{font-weight:850;letter-spacing:-.5px;font-size:21px}.logo span{color:var(--brand)}
+.pilot{font-size:11px;background:var(--soft);padding:5px 8px;border-radius:20px;margin-left:7px;color:var(--muted)}
+.navright{display:flex;gap:12px;align-items:center;color:var(--muted);font-size:14px}
+.ghost{border:1px solid var(--line);background:white;border-radius:12px;padding:9px 13px;color:var(--ink)}
+.hero{text-align:center;padding:60px 10px 28px}
+.hero h1{font-size:clamp(38px,6vw,64px);line-height:1.03;letter-spacing:-2.6px;margin:0 auto 17px;max-width:860px}
+.hero p{font-size:18px;color:var(--muted);max-width:720px;margin:auto;line-height:1.55}
+.ask{max-width:860px;margin:28px auto 12px;border:1px solid #dfe3eb;border-radius:20px;padding:14px;box-shadow:0 14px 40px rgba(23,32,51,.07)}
+.ask textarea{border:0;outline:0;width:100%;resize:none;min-height:90px;padding:9px;font-size:17px;color:var(--ink)}
+.askbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--soft);padding:7px 10px;border-radius:99px;color:#596274;font-size:12px}
+.primary{border:0;background:var(--brand);color:white;border-radius:12px;padding:11px 17px;font-weight:750}
+.prefbox{max-width:860px;margin:12px auto 0;display:flex;justify-content:center}
+.togglecard{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:14px;padding:10px 13px;background:#fff;font-size:13px;color:var(--muted)}
+.switch{width:42px;height:24px;border-radius:99px;background:#cfd5df;position:relative;transition:.2s;flex:0 0 auto}
+.switch::after{content:"";width:18px;height:18px;position:absolute;left:3px;top:3px;border-radius:50%;background:white;box-shadow:0 1px 4px #0002;transition:.2s}
+.switch.on{background:var(--brand)}.switch.on::after{left:21px}
+.examples{text-align:center;color:#8a93a3;font-size:13px;margin-top:13px}
+.flow{display:flex;justify-content:center;align-items:center;gap:14px;margin:44px 0 34px;color:#8b94a4;font-size:13px;font-weight:750;letter-spacing:.08em}
+.flow b{color:var(--brand)}.flow i{height:1px;background:var(--line);width:55px}
+.results{display:none}
+.sectionhead{display:flex;justify-content:space-between;align-items:end;margin:20px 0 16px}
+.sectionhead h2{font-size:28px;margin:0;letter-spacing:-.7px}.sectionhead p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.summary{background:var(--soft);border-radius:16px;padding:14px 16px;display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+.summary span{background:white;border:1px solid var(--line);border-radius:99px;padding:7px 10px;font-size:12px}
+.safetystrip{display:flex;align-items:flex-start;gap:12px;border:1px solid #dce7e1;background:var(--goodsoft);border-radius:16px;padding:14px 16px;margin-bottom:18px}
+.safetystrip b{display:block;margin-bottom:3px}.safetystrip p{margin:0;color:#56665f;font-size:13px;line-height:1.45}
+.shield{font-size:22px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:white;position:relative;transition:.18s}
+.card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(23,32,51,.08)}
+.photo{height:145px;background:linear-gradient(135deg,#d9e5ff,#eef3ff);display:flex;align-items:end;padding:14px;font-weight:850}
+.photo.two{background:linear-gradient(135deg,#ffe4c9,#fff4e8)}.photo.three{background:linear-gradient(135deg,#d9f2e8,#effaf6)}
+.badge{position:absolute;top:12px;left:12px;background:white;border-radius:99px;padding:6px 9px;font-size:11px;font-weight:850;box-shadow:0 3px 10px #0001}
+.body{padding:17px}.place{display:flex;justify-content:space-between;gap:10px}.place h3{margin:0;font-size:20px}
+.score{font-weight:850;color:var(--good)}.sub{font-size:13px;color:var(--muted);margin-top:4px}
+.price{font-size:28px;font-weight:850;letter-spacing:-1px;margin:15px 0 3px}.price small{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:0}
+.metric{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+.metric span:first-child{color:var(--muted)}.good{color:var(--good);font-weight:750}.warn{color:var(--warn);font-weight:750}
+.safetybox{border:1px solid #dce7e1;background:var(--goodsoft);border-radius:12px;padding:11px;margin:12px 0}
+.safetytitle{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:800;margin-bottom:6px}
+.safetybox ul{margin:0;padding-left:17px;color:#53645c;font-size:12.5px;line-height:1.5}
+.verdict{background:var(--soft);border-radius:12px;padding:11px;margin:12px 0;font-size:12.5px;line-height:1.45}
+.actions{display:flex;gap:8px}.actions button{flex:1;padding:10px;border-radius:11px;font-weight:750}
+.outline{background:white;border:1px solid var(--line)}.watch{background:var(--dark);color:white;border:1px solid var(--dark)}
+.detailpanel{display:none;margin-top:28px;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.detailhead{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.detailhead h3{margin:0}.detailgrid{display:grid;grid-template-columns:1.15fr .85fr}
+.detailcol{padding:20px}.detailcol+.detailcol{border-left:1px solid var(--line);background:var(--soft)}
+.checks{display:grid;gap:9px}.check{padding:10px 11px;border:1px solid var(--line);border-radius:12px;background:white;font-size:13px}
+.route{margin-top:14px;padding:13px;border-radius:12px;background:var(--warnsoft);border:1px solid #f0dfbd;font-size:13px;line-height:1.5}
+.route b{display:block;margin-bottom:4px}
+.watchpanel{display:none;margin-top:32px;border:1px solid var(--line);border-radius:18px;padding:20px}
+.watchpanel h3{margin:0 0 5px}.trend{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:15px}
+.day{background:var(--soft);border-radius:12px;padding:12px}.day small{color:var(--muted)}.day strong{display:block;margin-top:4px}.drop{color:var(--good)}
+.note{font-size:12px;color:#8b94a4;margin-top:24px;text-align:center;line-height:1.5}
+@media(max-width:840px){
+  .cards{grid-template-columns:1fr}.hero{padding-top:42px}.hero h1{letter-spacing:-1.7px}.photo{height:120px}
+  .askbar{align-items:flex-end}.chips .chip:nth-child(n+3){display:none}.sectionhead{align-items:start;flex-direction:column;gap:8px}
+  .trend{grid-template-columns:repeat(2,1fr)}.detailgrid{grid-template-columns:1fr}.detailcol+.detailcol{border-left:0;border-top:1px solid var(--line)}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v0.5</span></div>
+  <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
+</nav>
+
+<section class="hero">
+  <h1>Tell us the trip you want.<br>We'll do the searching.</h1>
+  <p>VoyageAI compares destinations, flights, hotels, reviews, neighbourhood fit and the details that matter to you — then keeps watching the prices.</p>
+
+  <div class="ask">
+    <textarea id="prompt">I want to get away next month for 5 days. Two people leaving Vancouver, somewhere warm. My budget is $2,000 and I want a great hotel with vegan restaurants nearby.</textarea>
+    <div class="askbar">
+      <div class="chips"><span class="chip">✈ Vancouver</span><span class="chip">💰 CAD</span><span class="chip">🌱 Vegan friendly</span></div>
+      <button class="primary" onclick="searchTrips()">Find my trip →</button>
+    </div>
+  </div>
+
+  <div class="prefbox">
+    <div class="togglecard">
+      <div id="safetySwitch" class="switch" onclick="toggleSafety()"></div>
+      <div><b style="color:var(--ink)">Prioritize solo / women traveller comfort</b><br>Give extra weight to hotel location, active surroundings and late-evening transportation.</div>
+    </div>
+  </div>
+  <div class="examples">VoyageAI uses safety as context — not a simplistic “safe / unsafe” label.</div>
+</section>
+
+<div class="flow"><b>ASK</b><i></i><span>COMPARE</span><i></i><span>WATCH</span></div>
+
+<section class="results" id="results">
+  <div class="sectionhead">
+    <div><h2>Three trips worth considering</h2><p id="rankcopy">Ranked for value, hotel quality, location, food fit and travel convenience.</p></div>
+    <button class="ghost" onclick="editSearch()">← Change request</button>
+  </div>
+
+  <div class="summary">
+    <span>5 days</span><span>2 travellers</span><span>From YVR</span><span>Under $2,000 CAD</span><span>Warm weather</span><span>Vegan-friendly area</span><span id="safetytag" style="display:none">🛡 Safety & comfort priority</span>
+  </div>
+
+  <div id="safetystrip" class="safetystrip" style="display:none">
+    <div class="shield">🛡️</div>
+    <div><b>Safety & Comfort weighting is on</b><p>VoyageAI is giving extra weight to active hotel surroundings, 24-hour front desk, straightforward rideshare/taxi access, transit convenience and the practicality of returning to the hotel later in the evening.</p></div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="badge" id="badge1">BEST OVERALL</div><div class="photo">Palm Springs, California</div>
+      <div class="body">
+        <div class="place"><div><h3>Palm Springs</h3><div class="sub">Central hotel · easy airport transfer</div></div><div class="score">92</div></div>
+        <div class="price">$1,742 <small>estimated trip total</small></div>
+        <div class="metric"><span>Hotel reviews</span><b>4.7 / 5 · Excellent</b></div>
+        <div class="metric"><span>Hotel location</span><b>94 / 100</b></div>
+        <div class="metric"><span>Vegan convenience</span><b class="good">Excellent · 12 nearby</b></div>
+        <div class="metric"><span>Safety & comfort</span><b class="good">90 / 100</b></div>
+        <div class="metric"><span>Current value</span><b class="good">↓ Strong</b></div>
+        <div class="safetybox">
+          <div class="safetytitle"><span>🛡 Traveller comfort</span><span>Very good</span></div>
+          <ul><li>24-hour front desk</li><li>Active central area near restaurants</li><li>Simple rideshare/taxi pickup</li></ul>
+        </div>
+        <div class="verdict"><b>Why VoyageAI likes it:</b> Strong overall balance of hotel quality, food options, location and ease of getting around while staying under budget.</div>
+        <div class="actions"><button class="outline" onclick="showDetails('Palm Springs')">Safety details</button><button class="watch" onclick="watch('Palm Springs','$1,742')">♡ Watch</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="badge" id="badge2">BEST HOTEL</div><div class="photo two">San Diego, California</div>
+      <div class="body">
+        <div class="place"><div><h3>San Diego</h3><div class="sub">Walkable area · highly rated stay</div></div><div class="score">91</div></div>
+        <div class="price">$1,914 <small>estimated trip total</small></div>
+        <div class="metric"><span>Hotel reviews</span><b>4.8 / 5 · Excellent</b></div>
+        <div class="metric"><span>Hotel location</span><b>96 / 100</b></div>
+        <div class="metric"><span>Vegan convenience</span><b class="good">Excellent · 21 nearby</b></div>
+        <div class="metric"><span>Safety & comfort</span><b class="good">94 / 100</b></div>
+        <div class="metric"><span>Current value</span><b>Average</b></div>
+        <div class="safetybox">
+          <div class="safetytitle"><span>🛡 Traveller comfort</span><span>Excellent</span></div>
+          <ul><li>Highly active hotel area</li><li>Strong late-evening transport options</li><li>Restaurants very close to hotel</li></ul>
+        </div>
+        <div class="verdict"><b>Why VoyageAI likes it:</b> Best fit if neighbourhood comfort and hotel quality matter more than squeezing out the lowest possible price.</div>
+        <div class="actions"><button class="outline" onclick="showDetails('San Diego')">Safety details</button><button class="watch" onclick="watch('San Diego','$1,914')">♡ Watch</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="badge" id="badge3">BEST VALUE</div><div class="photo three">Las Vegas, Nevada</div>
+      <div class="body">
+        <div class="place"><div><h3>Las Vegas</h3><div class="sub">Easy flights · resort stay</div></div><div class="score">86</div></div>
+        <div class="price">$1,486 <small>estimated trip total</small></div>
+        <div class="metric"><span>Hotel reviews</span><b>4.5 / 5 · Very good</b></div>
+        <div class="metric"><span>Hotel location</span><b>91 / 100</b></div>
+        <div class="metric"><span>Vegan convenience</span><b class="good">Very good · 16 nearby</b></div>
+        <div class="metric"><span>Safety & comfort</span><b class="warn">82 / 100</b></div>
+        <div class="metric"><span>Current value</span><b class="good">🔥 Excellent</b></div>
+        <div class="safetybox" style="background:var(--warnsoft);border-color:#f0dfbd">
+          <div class="safetytitle"><span>🛡 Traveller comfort</span><span>Good</span></div>
+          <ul><li>Busy resort corridor</li><li>Easy taxi/rideshare access</li><li>VoyageAI favours rideshare late at night</li></ul>
+        </div>
+        <div class="verdict"><b>Why VoyageAI likes it:</b> Excellent price, but it ranks lower when solo/women traveller comfort is weighted heavily because the trip may involve more late-night movement.</div>
+        <div class="actions"><button class="outline" onclick="showDetails('Las Vegas')">Safety details</button><button class="watch" onclick="watch('Las Vegas','$1,486')">♡ Watch</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detailpanel" id="detailpanel">
+    <div class="detailhead"><h3>🛡 Safety & Comfort · <span id="detailname">Hotel area</span></h3><button class="ghost" onclick="closeDetails()">Close</button></div>
+    <div class="detailgrid">
+      <div class="detailcol">
+        <b>What VoyageAI would evaluate</b>
+        <div class="checks" style="margin-top:12px">
+          <div class="check">✓ Hotel has 24-hour reception / staffed front desk</div>
+          <div class="check">✓ Hotel pickup is straightforward for taxi and rideshare</div>
+          <div class="check">✓ Restaurants and services are close to the hotel</div>
+          <div class="check">✓ Nearby transit is practical for daytime sightseeing</div>
+          <div class="check">✓ Recent permitted review data shows positive sentiment around location and staff</div>
+        </div>
+      </div>
+      <div class="detailcol">
+        <b>Late-evening route guidance</b>
+        <div class="route"><b>Example: theatre → hotel at 10:45 PM</b>VoyageAI would compare walking, transit and taxi/rideshare and recommend the most practical option for the traveller profile — rather than automatically choosing the cheapest route.</div>
+        <div class="route" style="background:white;border-color:var(--line)"><b>Current destination information</b>Production VoyageAI would check authoritative travel advisories, major transit disruptions and relevant destination alerts and show when the information was last verified.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="watchpanel" id="watchpanel">
+    <h3>👁 VoyageAI is watching <span id="watchname">your trip</span></h3>
+    <div class="sub">VoyageAI keeps checking the price — and in the full product could also flag material travel, transport or destination changes affecting this trip.</div>
+    <div class="trend">
+      <div class="day"><small>Started</small><strong id="startprice">$1,742</strong></div>
+      <div class="day"><small>Yesterday</small><strong>$1,719</strong></div>
+      <div class="day"><small>Today</small><strong class="drop">$1,664 ↓</strong></div>
+      <div class="day"><small>VoyageAI signal</small><strong class="drop">Strong value</strong></div>
+    </div>
+  </div>
+
+  <div class="note">Pilot data is illustrative. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
+</section>
+</div>
+
+<script>
+let safetyOn=false;
+function toggleSafety(){
+  safetyOn=!safetyOn;
+  document.getElementById('safetySwitch').classList.toggle('on',safetyOn);
+  document.getElementById('safetytag').style.display=safetyOn?'inline-block':'none';
+  document.getElementById('safetystrip').style.display=safetyOn?'flex':'none';
+  document.getElementById('rankcopy').textContent=safetyOn
+    ? 'Ranked with extra weight on neighbourhood comfort, late-evening transport and hotel access.'
+    : 'Ranked for value, hotel quality, location, food fit and travel convenience.';
+  document.getElementById('badge1').textContent=safetyOn?'BEST BALANCE':'BEST OVERALL';
+  document.getElementById('badge2').textContent=safetyOn?'BEST FOR COMFORT':'BEST HOTEL';
+}
+function searchTrips(){
+  document.getElementById('results').style.display='block';
+  document.querySelector('.flow').innerHTML='<span>ASK</span><i></i><b>COMPARE</b><i></i><span>WATCH</span>';
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+}
+function editSearch(){window.scrollTo({top:0,behavior:'smooth'});document.getElementById('prompt').focus()}
+function watch(n,p){
+  document.getElementById('watchname').textContent=n;
+  document.getElementById('startprice').textContent=p;
+  document.getElementById('watchpanel').style.display='block';
+  document.querySelector('.flow').innerHTML='<span>ASK</span><i></i><span>COMPARE</span><i></i><b>WATCH</b>';
+  document.getElementById('watchpanel').scrollIntoView({behavior:'smooth'});
+}
+function showWatch(){document.getElementById('results').style.display='block';document.getElementById('watchpanel').style.display='block';document.getElementById('watchpanel').scrollIntoView({behavior:'smooth'})}
+function showDetails(n){document.getElementById('detailname').textContent=n;document.getElementById('detailpanel').style.display='block';document.getElementById('detailpanel').scrollIntoView({behavior:'smooth'})}
+function closeDetails(){document.getElementById('detailpanel').style.display='none'}
+</script>
+</body>
+</html>
