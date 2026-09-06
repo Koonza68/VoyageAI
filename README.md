@@ -1,13 +1,10 @@
-# Project VoyageAI v0.6 — Personalized Match
+# Project VoyageAI v0.7 — Explainable VoyageAI Score
 
-Prototype evolution from ASK → COMPARE → WATCH to **ASK → MATCH → WATCH**.
+Prototype improvements:
+- Prominent VoyageAI Score
+- Clickable score explanation
+- Personalized factor breakdown
+- Hotel quality, location, price fit, flight convenience, safety & comfort, and food/lifestyle fit
+- Clear explanation that the score is personal, not a universal hotel rating
 
-## New in v0.6
-- Match score is the primary result signal
-- Match profile explains what VoyageAI understood from the request
-- Each result explains *why it matches you* and its main trade-off
-- Safety & Comfort preference changes Match weighting
-- Existing Watch concept retained
-- Clear prototype/sample-data disclosure
-
-All prices, reviews, safety information and scores are illustrative prototype data.
+All travel data and scores in this prototype are illustrative.
