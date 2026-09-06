@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v0.5</title>
+<title>Project VoyageAI v0.6 — Match</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
-  --good:#18835d;--goodsoft:#eef9f4;--warn:#b96d00;--warnsoft:#fff7ea;--dark:#152238;
+  --good:#18835d;--goodsoft:#eef9f4;--warn:#b96d00;--warnsoft:#fff7ea;--dark:#152238;--match:#6d4bd1;--matchsoft:#f4f0ff;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#fff;color:var(--ink)}
@@ -50,14 +50,14 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 .photo.two{background:linear-gradient(135deg,#ffe4c9,#fff4e8)}.photo.three{background:linear-gradient(135deg,#d9f2e8,#effaf6)}
 .badge{position:absolute;top:12px;left:12px;background:white;border-radius:99px;padding:6px 9px;font-size:11px;font-weight:850;box-shadow:0 3px 10px #0001}
 .body{padding:17px}.place{display:flex;justify-content:space-between;gap:10px}.place h3{margin:0;font-size:20px}
-.score{font-weight:850;color:var(--good)}.sub{font-size:13px;color:var(--muted);margin-top:4px}
+.score{font-weight:900;color:var(--match);background:var(--matchsoft);border-radius:12px;padding:7px 9px;min-width:62px;text-align:center}.score small{display:block;font-size:9px;letter-spacing:.06em;color:#766c92;margin-top:1px}.sub{font-size:13px;color:var(--muted);margin-top:4px}
 .price{font-size:28px;font-weight:850;letter-spacing:-1px;margin:15px 0 3px}.price small{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:0}
 .metric{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
 .metric span:first-child{color:var(--muted)}.good{color:var(--good);font-weight:750}.warn{color:var(--warn);font-weight:750}
 .safetybox{border:1px solid #dce7e1;background:var(--goodsoft);border-radius:12px;padding:11px;margin:12px 0}
 .safetytitle{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:800;margin-bottom:6px}
 .safetybox ul{margin:0;padding-left:17px;color:#53645c;font-size:12.5px;line-height:1.5}
-.verdict{background:var(--soft);border-radius:12px;padding:11px;margin:12px 0;font-size:12.5px;line-height:1.45}
+.verdict{background:var(--matchsoft);border:1px solid #e7defe;border-radius:12px;padding:12px;margin:12px 0;font-size:12.5px;line-height:1.45}.whytitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.fitline{height:6px;background:#e8e3f4;border-radius:99px;overflow:hidden;margin:6px 0 10px}.fitline span{display:block;height:100%;background:var(--match);border-radius:99px}.matchintro{border:1px solid #e7defe;background:var(--matchsoft);border-radius:16px;padding:15px 17px;margin-bottom:18px}.matchintro b{font-size:15px}.matchintro p{margin:4px 0 0;color:#665f78;font-size:13px;line-height:1.45}
 .actions{display:flex;gap:8px}.actions button{flex:1;padding:10px;border-radius:11px;font-weight:750}
 .outline{background:white;border:1px solid var(--line)}.watch{background:var(--dark);color:white;border:1px solid var(--dark)}
 .detailpanel{display:none;margin-top:28px;border:1px solid var(--line);border-radius:18px;overflow:hidden}
@@ -81,13 +81,13 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v0.5</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v0.6</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
 <section class="hero">
   <h1>Tell us the trip you want.<br>We'll do the searching.</h1>
-  <p>VoyageAI compares destinations, flights, hotels, reviews, neighbourhood fit and the details that matter to you — then keeps watching the prices.</p>
+  <p>VoyageAI learns what matters to you, searches the options and shows the trips that fit you best — then keeps watching the prices.</p>
 
   <div class="ask">
     <textarea id="prompt">I want to get away next month for 5 days. Two people leaving Vancouver, somewhere warm. My budget is $2,000 and I want a great hotel with vegan restaurants nearby.</textarea>
@@ -106,13 +106,15 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
   <div class="examples">VoyageAI uses safety as context — not a simplistic “safe / unsafe” label.</div>
 </section>
 
-<div class="flow"><b>ASK</b><i></i><span>COMPARE</span><i></i><span>WATCH</span></div>
+<div class="flow"><b>ASK</b><i></i><span>MATCH</span><i></i><span>WATCH</span></div>
 
 <section class="results" id="results">
   <div class="sectionhead">
-    <div><h2>Three trips worth considering</h2><p id="rankcopy">Ranked for value, hotel quality, location, food fit and travel convenience.</p></div>
+    <div><h2>Your best trip matches</h2><p id="rankcopy">Personalized for your budget, hotel quality, location, food preferences and travel convenience.</p></div>
     <button class="ghost" onclick="editSearch()">← Change request</button>
   </div>
+
+  <div class="matchintro"><b>✨ Your Match profile</b><p>For this search, VoyageAI is prioritizing a warm 5-day getaway from Vancouver for two, under $2,000 CAD, with a great hotel and strong vegan options nearby. The Match score shows how closely each trip fits that request.</p></div>
 
   <div class="summary">
     <span>5 days</span><span>2 travellers</span><span>From YVR</span><span>Under $2,000 CAD</span><span>Warm weather</span><span>Vegan-friendly area</span><span id="safetytag" style="display:none">🛡 Safety & comfort priority</span>
@@ -127,7 +129,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     <div class="card">
       <div class="badge" id="badge1">BEST OVERALL</div><div class="photo">Palm Springs, California</div>
       <div class="body">
-        <div class="place"><div><h3>Palm Springs</h3><div class="sub">Central hotel · easy airport transfer</div></div><div class="score">92</div></div>
+        <div class="place"><div><h3>Palm Springs</h3><div class="sub">Central hotel · easy airport transfer</div></div><div class="score">94%<small>MATCH</small></div></div>
         <div class="price">$1,742 <small>estimated trip total</small></div>
         <div class="metric"><span>Hotel reviews</span><b>4.7 / 5 · Excellent</b></div>
         <div class="metric"><span>Hotel location</span><b>94 / 100</b></div>
@@ -138,7 +140,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
           <div class="safetytitle"><span>🛡 Traveller comfort</span><span>Very good</span></div>
           <ul><li>24-hour front desk</li><li>Active central area near restaurants</li><li>Simple rideshare/taxi pickup</li></ul>
         </div>
-        <div class="verdict"><b>Why VoyageAI likes it:</b> Strong overall balance of hotel quality, food options, location and ease of getting around while staying under budget.</div>
+        <div class="verdict"><div class="whytitle"><b>Why it matches you</b><b>94%</b></div><div class="fitline"><span style="width:94%"></span></div>Excellent hotel reviews, central location, 12 vegan options nearby and a comfortable total price below your budget. <b>Only trade-off:</b> not the cheapest option.</div>
         <div class="actions"><button class="outline" onclick="showDetails('Palm Springs')">Safety details</button><button class="watch" onclick="watch('Palm Springs','$1,742')">♡ Watch</button></div>
       </div>
     </div>
@@ -146,7 +148,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     <div class="card">
       <div class="badge" id="badge2">BEST HOTEL</div><div class="photo two">San Diego, California</div>
       <div class="body">
-        <div class="place"><div><h3>San Diego</h3><div class="sub">Walkable area · highly rated stay</div></div><div class="score">91</div></div>
+        <div class="place"><div><h3>San Diego</h3><div class="sub">Walkable area · highly rated stay</div></div><div class="score">92%<small>MATCH</small></div></div>
         <div class="price">$1,914 <small>estimated trip total</small></div>
         <div class="metric"><span>Hotel reviews</span><b>4.8 / 5 · Excellent</b></div>
         <div class="metric"><span>Hotel location</span><b>96 / 100</b></div>
@@ -157,7 +159,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
           <div class="safetytitle"><span>🛡 Traveller comfort</span><span>Excellent</span></div>
           <ul><li>Highly active hotel area</li><li>Strong late-evening transport options</li><li>Restaurants very close to hotel</li></ul>
         </div>
-        <div class="verdict"><b>Why VoyageAI likes it:</b> Best fit if neighbourhood comfort and hotel quality matter more than squeezing out the lowest possible price.</div>
+        <div class="verdict"><div class="whytitle"><b>Why it matches you</b><b>92%</b></div><div class="fitline"><span style="width:92%"></span></div>Your strongest hotel and neighbourhood fit, with 21 vegan options nearby. <b>Trade-off:</b> it uses almost all of your $2,000 budget.</div>
         <div class="actions"><button class="outline" onclick="showDetails('San Diego')">Safety details</button><button class="watch" onclick="watch('San Diego','$1,914')">♡ Watch</button></div>
       </div>
     </div>
@@ -165,7 +167,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     <div class="card">
       <div class="badge" id="badge3">BEST VALUE</div><div class="photo three">Las Vegas, Nevada</div>
       <div class="body">
-        <div class="place"><div><h3>Las Vegas</h3><div class="sub">Easy flights · resort stay</div></div><div class="score">86</div></div>
+        <div class="place"><div><h3>Las Vegas</h3><div class="sub">Easy flights · resort stay</div></div><div class="score">86%<small>MATCH</small></div></div>
         <div class="price">$1,486 <small>estimated trip total</small></div>
         <div class="metric"><span>Hotel reviews</span><b>4.5 / 5 · Very good</b></div>
         <div class="metric"><span>Hotel location</span><b>91 / 100</b></div>
@@ -176,7 +178,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
           <div class="safetytitle"><span>🛡 Traveller comfort</span><span>Good</span></div>
           <ul><li>Busy resort corridor</li><li>Easy taxi/rideshare access</li><li>VoyageAI favours rideshare late at night</li></ul>
         </div>
-        <div class="verdict"><b>Why VoyageAI likes it:</b> Excellent price, but it ranks lower when solo/women traveller comfort is weighted heavily because the trip may involve more late-night movement.</div>
+        <div class="verdict"><div class="whytitle"><b>Why it matches you</b><b>86%</b></div><div class="fitline"><span style="width:86%"></span></div>Best price and easy flights, with plenty of vegan choices. <b>Trade-off:</b> hotel/comfort fit is weaker than Palm Springs or San Diego.</div>
         <div class="actions"><button class="outline" onclick="showDetails('Las Vegas')">Safety details</button><button class="watch" onclick="watch('Las Vegas','$1,486')">♡ Watch</button></div>
       </div>
     </div>
@@ -214,7 +216,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
 
-  <div class="note">Pilot data is illustrative. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
+  <div class="note"><b>Prototype — sample travel data.</b> Prices, reviews and scores are illustrative. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
 </section>
 </div>
 
@@ -226,14 +228,14 @@ function toggleSafety(){
   document.getElementById('safetytag').style.display=safetyOn?'inline-block':'none';
   document.getElementById('safetystrip').style.display=safetyOn?'flex':'none';
   document.getElementById('rankcopy').textContent=safetyOn
-    ? 'Ranked with extra weight on neighbourhood comfort, late-evening transport and hotel access.'
-    : 'Ranked for value, hotel quality, location, food fit and travel convenience.';
+    ? 'Match scores now give extra weight to neighbourhood comfort, late-evening transport and hotel access.'
+    : 'Personalized for your budget, hotel quality, location, food preferences and travel convenience.';
   document.getElementById('badge1').textContent=safetyOn?'BEST BALANCE':'BEST OVERALL';
   document.getElementById('badge2').textContent=safetyOn?'BEST FOR COMFORT':'BEST HOTEL';
 }
 function searchTrips(){
   document.getElementById('results').style.display='block';
-  document.querySelector('.flow').innerHTML='<span>ASK</span><i></i><b>COMPARE</b><i></i><span>WATCH</span>';
+  document.querySelector('.flow').innerHTML='<span>ASK</span><i></i><b>MATCH</b><i></i><span>WATCH</span>';
   document.getElementById('results').scrollIntoView({behavior:'smooth'});
 }
 function editSearch(){window.scrollTo({top:0,behavior:'smooth'});document.getElementById('prompt').focus()}
@@ -241,7 +243,7 @@ function watch(n,p){
   document.getElementById('watchname').textContent=n;
   document.getElementById('startprice').textContent=p;
   document.getElementById('watchpanel').style.display='block';
-  document.querySelector('.flow').innerHTML='<span>ASK</span><i></i><span>COMPARE</span><i></i><b>WATCH</b>';
+  document.querySelector('.flow').innerHTML='<span>ASK</span><i></i><span>MATCH</span><i></i><b>WATCH</b>';
   document.getElementById('watchpanel').scrollIntoView({behavior:'smooth'});
 }
 function showWatch(){document.getElementById('results').style.display='block';document.getElementById('watchpanel').style.display='block';document.getElementById('watchpanel').scrollIntoView({behavior:'smooth'})}

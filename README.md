@@ -1,21 +1,13 @@
-# Project VoyageAI v0.5
+# Project VoyageAI v0.6 — Personalized Match
 
-Pilot direction: ASK → COMPARE → WATCH
+Prototype evolution from ASK → COMPARE → WATCH to **ASK → MATCH → WATCH**.
 
-v0.5 adds Safety & Comfort as a first-class travel factor, including:
-- Solo / women traveller comfort priority toggle
-- Safety & Comfort score on each trip
-- Hotel-area comfort indicators
-- Late-evening transportation guidance concept
-- Safety details panel
-- Safety weighting in trip ranking
-- Continued price-watch concept
+## New in v0.6
+- Match score is the primary result signal
+- Match profile explains what VoyageAI understood from the request
+- Each result explains *why it matches you* and its main trade-off
+- Safety & Comfort preference changes Match weighting
+- Existing Watch concept retained
+- Clear prototype/sample-data disclosure
 
-All prices, review scores, safety scores, and destination details in this pilot are illustrative.
-
-Production requirements:
-- authoritative government/destination safety sources
-- appropriately licensed/permitted hotel review sources
-- current transport and destination alerts
-- avoid simplistic "safe/unsafe" guarantees
-- show source/verification timestamps and confidence
+All prices, reviews, safety information and scores are illustrative prototype data.
