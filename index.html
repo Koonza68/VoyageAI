@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v0.8 — Tune Your Match</title>
+<title>Project VoyageAI v0.8.1 — Smarter Scoring</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -105,12 +105,18 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 @media(max-width:840px){.tunergrid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.tunergrid{grid-template-columns:1fr}.tunerhead{flex-direction:column}}
 
+
+.budgetdelta{display:inline-block;margin-left:8px;font-size:12px;font-weight:800;color:var(--good)}
+.scoreband{display:block;margin-top:4px;font-size:10px;font-weight:900;letter-spacing:.04em}
+.score-exceptional{color:#0c7b53}.score-strong{color:#3158d7}.score-good{color:#7a5b11}.score-compromise{color:#a24b1c}.score-weak{color:#9b2c2c}
+.engine-note{margin:0 0 16px;padding:12px 14px;border:1px solid #e7defe;border-radius:12px;background:#fbf9ff;color:var(--muted);font-size:12.5px;line-height:1.5}
+
 </style>
 </head>
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v0.8</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v0.8.1</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -169,12 +175,16 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
   <div class="ranknote" id="ranknote">VoyageAI has re-ranked these trips based on your priorities.</div>
+  <div class="engine-note">
+    <b>Smarter scoring:</b> Very high priorities now carry much more weight, price fit is tied to your $2,000 budget, and the score intentionally uses a wider range so a 94 means something.
+  </div>
+
 
   <div class="cards">
     <div class="card" id="card-Palm-Springs" data-city="Palm Springs">
       <div class="badge" id="badge1">BEST OVERALL</div><div class="photo">Palm Springs, California</div>
       <div class="body">
-        <div class="place"><div><h3>Palm Springs</h3><div class="sub">Central hotel · easy airport transfer</div></div><div><div class="score" id="score-Palm-Springs" onclick="showScore('Palm Springs',currentScores['Palm Springs'])"><span class="scoreval">94%</span><small>VOYAGEAI SCORE</small></div><div class="scorehint">See why ↑</div></div></div>
+        <div class="place"><div><h3>Palm Springs</h3><div class="sub">Central hotel · easy airport transfer</div></div><div><div class="score" id="score-Palm-Springs" onclick="showScore('Palm Springs',currentScores['Palm Springs'])"><span class="scoreval">94%</span><small>VOYAGEAI SCORE</small><span class="scoreband" id="band-Palm-Springs"></span></div><div class="scorehint">See why ↑</div></div></div>
         <div class="price">$1,742 <small>estimated trip total</small></div>
         <div class="metric"><span>Hotel reviews</span><b>4.7 / 5 · Excellent</b></div>
         <div class="metric"><span>Hotel location</span><b>94 / 100</b></div>
@@ -193,7 +203,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     <div class="card" id="card-San-Diego" data-city="San Diego">
       <div class="badge" id="badge2">BEST HOTEL</div><div class="photo two">San Diego, California</div>
       <div class="body">
-        <div class="place"><div><h3>San Diego</h3><div class="sub">Walkable area · highly rated stay</div></div><div><div class="score" id="score-San-Diego" onclick="showScore('San Diego',currentScores['San Diego'])"><span class="scoreval">92%</span><small>VOYAGEAI SCORE</small></div><div class="scorehint">See why ↑</div></div></div>
+        <div class="place"><div><h3>San Diego</h3><div class="sub">Walkable area · highly rated stay</div></div><div><div class="score" id="score-San-Diego" onclick="showScore('San Diego',currentScores['San Diego'])"><span class="scoreval">92%</span><small>VOYAGEAI SCORE</small><span class="scoreband" id="band-San-Diego"></span></div><div class="scorehint">See why ↑</div></div></div>
         <div class="price">$1,914 <small>estimated trip total</small></div>
         <div class="metric"><span>Hotel reviews</span><b>4.8 / 5 · Excellent</b></div>
         <div class="metric"><span>Hotel location</span><b>96 / 100</b></div>
@@ -212,7 +222,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     <div class="card" id="card-Las-Vegas" data-city="Las Vegas">
       <div class="badge" id="badge3">BEST VALUE</div><div class="photo three">Las Vegas, Nevada</div>
       <div class="body">
-        <div class="place"><div><h3>Las Vegas</h3><div class="sub">Easy flights · resort stay</div></div><div><div class="score" id="score-Las-Vegas" onclick="showScore('Las Vegas',currentScores['Las Vegas'])"><span class="scoreval">86%</span><small>VOYAGEAI SCORE</small></div><div class="scorehint">See why ↑</div></div></div>
+        <div class="place"><div><h3>Las Vegas</h3><div class="sub">Easy flights · resort stay</div></div><div><div class="score" id="score-Las-Vegas" onclick="showScore('Las Vegas',currentScores['Las Vegas'])"><span class="scoreval">86%</span><small>VOYAGEAI SCORE</small><span class="scoreband" id="band-Las-Vegas"></span></div><div class="scorehint">See why ↑</div></div></div>
         <div class="price">$1,486 <small>estimated trip total</small></div>
         <div class="metric"><span>Hotel reviews</span><b>4.5 / 5 · Very good</b></div>
         <div class="metric"><span>Hotel location</span><b>91 / 100</b></div>
@@ -313,27 +323,77 @@ const scoreData={
  'San Diego':{scores:[['Hotel quality',98],['Location',96],['Price fit',84],['Flight convenience',90],['Safety & comfort',94],['Food & lifestyle fit',99]],why:'Your strongest hotel, neighbourhood and vegan-food fit. Its main penalty is price because it uses almost all of your $2,000 budget.'},
  'Las Vegas':{scores:[['Hotel quality',88],['Location',91],['Price fit',99],['Flight convenience',97],['Safety & comfort',82],['Food & lifestyle fit',92]],why:'Excellent price fit and very convenient flights, with good food options. Hotel quality and traveller-comfort fit are weaker than the top two choices.'}
 };
+
 function showScore(n,total){
- const d=scoreData[n]; document.getElementById('scorename').textContent=n; document.getElementById('scorebig').textContent=total;
- document.getElementById('scorewhy').innerHTML='<b>Why it scored '+total+':</b> '+d.why+' <br><br><b>Your current priorities are part of this score.</b> Change the sliders above and the score will update.';
- document.getElementById('scoregrid').innerHTML=d.scores.map(x=>`<div class="factor"><div class="factorrow"><span>${x[0]}</span><b>${x[1]}</b></div><div class="factorbar"><span style="width:${x[1]}%"></span></div></div>`).join('');
- document.getElementById('scorepanel').style.display='block'; document.getElementById('scorepanel').scrollIntoView({behavior:'smooth'});
+ const t=trips[n];
+ const liveScores=[
+   ['Price fit',Math.round(priceFit(t.price))],
+   ['Hotel quality',t.factors.hotel],
+   ['Location',t.factors.location],
+   ['Safety & comfort',t.factors.safety],
+   ['Food & lifestyle',t.factors.food],
+   ['Flight convenience',t.factors.flight]
+ ];
+ document.getElementById('scorename').textContent=n;
+ document.getElementById('scorebig').textContent=total;
+ document.getElementById('scorewhy').innerHTML='<b>Why it scored '+total+':</b> '+t.why+' <br><br><b>Price fit is calculated against your $2,000 trip budget, and Very high priorities carry exponentially more weight.</b>';
+ document.getElementById('scoregrid').innerHTML=liveScores.map(x=>`<div class="factor"><div class="factorrow"><span>${x[0]}</span><b>${x[1]}</b></div><div class="factorbar"><span style="width:${x[1]}%"></span></div></div>`).join('');
+ document.getElementById('scorepanel').style.display='block';
+ document.getElementById('scorepanel').scrollIntoView({behavior:'smooth'});
 }
+
 function closeScore(){document.getElementById('scorepanel').style.display='none'}
 
 function closeDetails(){document.getElementById('detailpanel').style.display='none'}
 
-const baseFactors={
- 'Palm Springs':{hotel:96,location:94,price:95,flight:88,safety:90,food:97},
- 'San Diego':{hotel:98,location:96,price:84,flight:90,safety:94,food:99},
- 'Las Vegas':{hotel:88,location:91,price:99,flight:97,safety:82,food:92}
+
+const trips={
+ 'Palm Springs':{
+   price:1742,
+   factors:{hotel:91,location:89,flight:84,safety:88,food:94},
+   why:'Excellent vegan convenience, strong hotel quality and a central stay, with a comfortable amount left in your budget.'
+ },
+ 'San Diego':{
+   price:1914,
+   factors:{hotel:96,location:95,flight:88,safety:94,food:98},
+   why:'Best overall hotel, location, safety and food fit, but it uses almost all of your $2,000 budget.'
+ },
+ 'Las Vegas':{
+   price:1486,
+   factors:{hotel:82,location:85,flight:96,safety:76,food:88},
+   why:'Excellent budget headroom and very convenient flights, with bigger trade-offs in hotel quality and safety/comfort.'
+ }
 };
-let currentScores={'Palm Springs':94,'San Diego':92,'Las Vegas':86};
+let currentScores={'Palm Springs':0,'San Diego':0,'Las Vegas':0};
 let bestCity='Palm Springs';
+const budget=2000;
 
 function weightLabel(v){return v<=1?'Low':v==2?'Lower':v==3?'Medium':v==4?'High':'Very high'}
+function weightPower(v){return ({1:1,2:2,3:4,4:8,5:16})[v]}
+
+function priceFit(price){
+  const remaining=budget-price;
+  if(remaining>=500) return 100;
+  if(remaining>=350) return 94;
+  if(remaining>=200) return 86;
+  if(remaining>=100) return 78;
+  if(remaining>=0) return 68 + (remaining/100)*10;
+  const over=-remaining;
+  if(over<=100) return 55-(over/100)*15;
+  if(over<=300) return 40-(over-100)/200*20;
+  return 15;
+}
+
+function band(score){
+  if(score>=90) return ['Exceptional match','score-exceptional'];
+  if(score>=80) return ['Strong match','score-strong'];
+  if(score>=70) return ['Good match','score-good'];
+  if(score>=60) return ['Some compromises','score-compromise'];
+  return ['Weak fit','score-weak'];
+}
+
 function recalculate(){
- const weights={
+ const sliderValues={
    price:+document.getElementById('price').value,
    hotel:+document.getElementById('hotel').value,
    location:+document.getElementById('location').value,
@@ -341,34 +401,64 @@ function recalculate(){
    food:+document.getElementById('food').value,
    flight:+document.getElementById('flight').value
  };
- for(const k of Object.keys(weights)){
-   const el=document.getElementById('w-'+k); if(el) el.textContent=weightLabel(weights[k]);
+ const weights={};
+ for(const k of Object.keys(sliderValues)){
+   const el=document.getElementById('w-'+k); if(el) el.textContent=weightLabel(sliderValues[k]);
+   weights[k]=weightPower(sliderValues[k]);
  }
  const totalWeight=Object.values(weights).reduce((a,b)=>a+b,0);
- Object.keys(baseFactors).forEach(city=>{
-   const f=baseFactors[city];
-   const raw=(f.price*weights.price+f.hotel*weights.hotel+f.location*weights.location+f.safety*weights.safety+f.food*weights.food+f.flight*weights.flight)/totalWeight;
-   const score=Math.round(raw);
+
+ Object.keys(trips).forEach(city=>{
+   const t=trips[city];
+   const scores={
+      price:priceFit(t.price),
+      hotel:t.factors.hotel,
+      location:t.factors.location,
+      safety:t.factors.safety,
+      food:t.factors.food,
+      flight:t.factors.flight
+   };
+   let weighted=0;
+   for(const k of Object.keys(weights)) weighted += scores[k]*weights[k];
+   let score=Math.round(weighted/totalWeight);
+
+   // Mild coherence penalty: a serious weak spot should prevent an inflated 90+.
+   const minCore=Math.min(scores.price,scores.hotel,scores.location,scores.safety,scores.food,scores.flight);
+   if(minCore<70 && score>89) score=89;
+   if(minCore<60 && score>84) score=84;
+
    currentScores[city]=score;
    const slug=city.replaceAll(' ','-');
    document.querySelector('#score-'+slug+' .scoreval').textContent=score+'%';
    document.getElementById('vscore-'+slug).textContent=score+'%';
    document.getElementById('vbar-'+slug).style.width=score+'%';
+   const [label,cls]=band(score);
+   const bandEl=document.getElementById('band-'+slug);
+   if(bandEl){bandEl.textContent=label; bandEl.className='scoreband '+cls;}
  });
+
  const ordered=Object.keys(currentScores).sort((a,b)=>currentScores[b]-currentScores[a]);
  bestCity=ordered[0];
  const cards=document.querySelector('.cards');
  ordered.forEach(city=>cards.appendChild(document.getElementById('card-'+city.replaceAll(' ','-'))));
  document.getElementById('heroScore').textContent=currentScores[bestCity]+'%';
  document.getElementById('heroBest').textContent=bestCity+' · Best current match';
+
  ordered.forEach((city,i)=>{
    const badge=document.querySelector('#card-'+city.replaceAll(' ','-')+' .badge');
    badge.textContent=i===0?'BEST MATCH':i===1?'SECOND BEST':'BEST ALTERNATIVE';
  });
+
  document.getElementById('ranknote').style.display='block';
- document.getElementById('rankcopy').textContent='Live ranking based on the priorities you set below.';
+ document.getElementById('rankcopy').textContent='Live ranking based on your weighted priorities and budget fit.';
 }
 
+
+
+window.addEventListener('DOMContentLoaded',()=>{
+  recalculate();
+  document.getElementById('ranknote').style.display='none';
+});
 </script>
 </body>
 </html>
