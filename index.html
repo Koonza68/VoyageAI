@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v0.8.1 — Smarter Scoring</title>
+<title>Project VoyageAI v0.8.3 — Tougher Score</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -90,22 +90,6 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
   .trend{grid-template-columns:repeat(2,1fr)}.detailgrid{grid-template-columns:1fr}.detailcol+.detailcol{border-left:0;border-top:1px solid var(--line)}
 }
 
-.tuner{border:1px solid #e7defe;background:linear-gradient(180deg,#faf8ff,#fff);border-radius:18px;padding:18px;margin:0 0 20px}
-.tunerhead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
-.tunerhead h3{margin:0 0 4px;font-size:18px}.tunerhead p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
-.tunergrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.tuneitem{border:1px solid var(--line);background:white;border-radius:14px;padding:12px}
-.tunetop{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;font-weight:800}
-.weightpill{font-size:11px;background:var(--matchsoft);color:var(--match);padding:4px 7px;border-radius:99px}
-.tuneitem input[type=range]{width:100%;margin-top:10px;accent-color:var(--match)}
-.tuneitem small{display:block;color:var(--muted);margin-top:5px;line-height:1.35}
-.ranknote{display:none;margin:-6px 0 16px;padding:10px 12px;background:var(--goodsoft);border:1px solid #dce7e1;border-radius:12px;color:#53645c;font-size:12.5px}
-.live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:850;color:var(--good);background:var(--goodsoft);border:1px solid #dce7e1;padding:5px 8px;border-radius:99px}
-.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--good)}
-@media(max-width:840px){.tunergrid{grid-template-columns:1fr 1fr}}
-@media(max-width:560px){.tunergrid{grid-template-columns:1fr}.tunerhead{flex-direction:column}}
-
-
 .budgetdelta{display:inline-block;margin-left:8px;font-size:12px;font-weight:800;color:var(--good)}
 .scoreband{display:block;margin-top:4px;font-size:10px;font-weight:900;letter-spacing:.04em}
 .score-exceptional{color:#0c7b53}.score-strong{color:#3158d7}.score-good{color:#7a5b11}.score-compromise{color:#a24b1c}.score-weak{color:#9b2c2c}
@@ -116,7 +100,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v0.8.1</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v0.8.3</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -149,7 +133,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     <button class="ghost" onclick="editSearch()">← Change request</button>
   </div>
 
-  <div class="matchintro"><b>✨ Your Match profile</b><p>For this search, VoyageAI is prioritizing a warm 5-day getaway from Vancouver for two, under $2,000 CAD, with a great hotel and strong vegan options nearby. The VoyageAI Score shows how closely each trip fits that request — and now you can tune what matters most to you.</p><div class="hero-score"><div class="hero-score-num" id="heroScore" onclick="showScore(bestCity,currentScores[bestCity])" style="cursor:pointer">94%</div><div><div class="hero-score-label">VOYAGEAI SCORE</div><div class="hero-score-copy"><span id="heroBest">Palm Springs · Best current match</span> · <button class="ghost" style="padding:5px 8px;margin-top:6px" onclick="showScore(bestCity,currentScores[bestCity])">See why →</button></div></div></div></div>
+  <div class="matchintro"><b>✨ Your Match profile</b><p>For this search, VoyageAI is prioritizing a warm 5-day getaway from Vancouver for two, under $2,000 CAD, with a great hotel and strong vegan options nearby. The VoyageAI Score shows how well each trip performs across everything that matters — price, hotel, location, safety, food and flights.</p><div class="hero-score"><div class="hero-score-num" id="heroScore" onclick="showScore(bestCity,currentScores[bestCity])" style="cursor:pointer">94%</div><div><div class="hero-score-label">VOYAGEAI SCORE</div><div class="hero-score-copy"><span id="heroBest">Palm Springs · Best current match</span> · <button class="ghost" style="padding:5px 8px;margin-top:6px" onclick="showScore(bestCity,currentScores[bestCity])">See why →</button></div></div></div></div>
 
   <div class="summary">
     <span>5 days</span><span>2 travellers</span><span>From YVR</span><span>Under $2,000 CAD</span><span>Warm weather</span><span>Vegan-friendly area</span><span id="safetytag" style="display:none">🛡 Safety & comfort priority</span>
@@ -159,25 +143,9 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     <div class="shield">🛡️</div>
     <div><b>Safety & Comfort weighting is on</b><p>VoyageAI is giving extra weight to active hotel surroundings, 24-hour front desk, straightforward rideshare/taxi access, transit convenience and the practicality of returning to the hotel later in the evening.</p></div>
   </div>
-
-  <div class="tuner">
-    <div class="tunerhead">
-      <div><h3>🎚 Adjust what matters to you</h3><p>Move the sliders and watch the VoyageAI Scores and ranking update instantly. This is the heart of personalization.</p></div>
-      <span class="live">LIVE SCORING</span>
-    </div>
-    <div class="tunergrid">
-      <label class="tuneitem"><div class="tunetop"><span>Price fit</span><span class="weightpill" id="w-price">High</span></div><input id="price" type="range" min="1" max="5" value="4" oninput="recalculate()"><small>How strongly VoyageAI should reward staying comfortably within budget.</small></label>
-      <label class="tuneitem"><div class="tunetop"><span>Hotel quality</span><span class="weightpill" id="w-hotel">High</span></div><input id="hotel" type="range" min="1" max="5" value="4" oninput="recalculate()"><small>Reviews, quality and overall stay experience.</small></label>
-      <label class="tuneitem"><div class="tunetop"><span>Location</span><span class="weightpill" id="w-location">High</span></div><input id="location" type="range" min="1" max="5" value="4" oninput="recalculate()"><small>Walkability, centrality and convenience to what you want to do.</small></label>
-      <label class="tuneitem"><div class="tunetop"><span>Safety & comfort</span><span class="weightpill" id="w-safety">Medium</span></div><input id="safety" type="range" min="1" max="5" value="3" oninput="recalculate()"><small>Hotel access, active surroundings and practical late-evening return options.</small></label>
-      <label class="tuneitem"><div class="tunetop"><span>Food & lifestyle</span><span class="weightpill" id="w-food">High</span></div><input id="food" type="range" min="1" max="5" value="4" oninput="recalculate()"><small>How well the area fits dietary and lifestyle preferences.</small></label>
-      <label class="tuneitem"><div class="tunetop"><span>Flight convenience</span><span class="weightpill" id="w-flight">Medium</span></div><input id="flight" type="range" min="1" max="5" value="3" oninput="recalculate()"><small>Directness, timing and ease of getting there.</small></label>
-    </div>
-  </div>
-  <div class="ranknote" id="ranknote">VoyageAI has re-ranked these trips based on your priorities.</div>
   <div class="engine-note">
-    <b>Smarter scoring:</b> Very high priorities now carry much more weight, price fit is tied to your $2,000 budget, and the score intentionally uses a wider range so a 94 means something.
-  </div>
+      <b>VoyageAI uses a tough scoring standard:</b> every major part of the trip matters. A weak category has real impact, several merely “good” categories will hold the score down, and 90+ is reserved for unusually strong all-around matches.
+    </div>
 
 
   <div class="cards">
@@ -336,7 +304,7 @@ function showScore(n,total){
  ];
  document.getElementById('scorename').textContent=n;
  document.getElementById('scorebig').textContent=total;
- document.getElementById('scorewhy').innerHTML='<b>Why it scored '+total+':</b> '+t.why+' <br><br><b>Price fit is calculated against your $2,000 trip budget, and Very high priorities carry exponentially more weight.</b>';
+ document.getElementById('scorewhy').innerHTML='<b>Why it scored '+total+':</b> '+t.why+' <br><br><b>Every category matters. VoyageAI gives the weakest areas extra influence and deliberately makes 90+ difficult to achieve.</b>';
  document.getElementById('scoregrid').innerHTML=liveScores.map(x=>`<div class="factor"><div class="factorrow"><span>${x[0]}</span><b>${x[1]}</b></div><div class="factorbar"><span style="width:${x[1]}%"></span></div></div>`).join('');
  document.getElementById('scorepanel').style.display='block';
  document.getElementById('scorepanel').scrollIntoView({behavior:'smooth'});
@@ -347,29 +315,27 @@ function closeScore(){document.getElementById('scorepanel').style.display='none'
 function closeDetails(){document.getElementById('detailpanel').style.display='none'}
 
 
+
 const trips={
  'Palm Springs':{
    price:1742,
    factors:{hotel:91,location:89,flight:84,safety:88,food:94},
-   why:'Excellent vegan convenience, strong hotel quality and a central stay, with a comfortable amount left in your budget.'
+   why:'Strong balance across price, hotel quality, location, safety/comfort, food fit and flight convenience.'
  },
  'San Diego':{
    price:1914,
    factors:{hotel:96,location:95,flight:88,safety:94,food:98},
-   why:'Best overall hotel, location, safety and food fit, but it uses almost all of your $2,000 budget.'
+   why:'Outstanding hotel, location, safety and food fit, but the trip uses almost all of the $2,000 budget.'
  },
  'Las Vegas':{
    price:1486,
    factors:{hotel:82,location:85,flight:96,safety:76,food:88},
-   why:'Excellent budget headroom and very convenient flights, with bigger trade-offs in hotel quality and safety/comfort.'
+   why:'Excellent price and flight convenience, but weaker hotel quality and safety/comfort reduce the overall fit.'
  }
 };
 let currentScores={'Palm Springs':0,'San Diego':0,'Las Vegas':0};
 let bestCity='Palm Springs';
 const budget=2000;
-
-function weightLabel(v){return v<=1?'Low':v==2?'Lower':v==3?'Medium':v==4?'High':'Very high'}
-function weightPower(v){return ({1:1,2:2,3:4,4:8,5:16})[v]}
 
 function priceFit(price){
   const remaining=budget-price;
@@ -385,48 +351,52 @@ function priceFit(price){
 }
 
 function band(score){
-  if(score>=90) return ['Exceptional match','score-exceptional'];
-  if(score>=80) return ['Strong match','score-strong'];
-  if(score>=70) return ['Good match','score-good'];
-  if(score>=60) return ['Some compromises','score-compromise'];
+  if(score>=92) return ['Exceptional match','score-exceptional'];
+  if(score>=82) return ['Strong match','score-strong'];
+  if(score>=72) return ['Good match','score-good'];
+  if(score>=62) return ['Some compromises','score-compromise'];
   return ['Weak fit','score-weak'];
 }
 
+// Equal importance, but weak dimensions matter.
+// We use a geometric mean rather than a simple average so one weak area
+// cannot be completely hidden by several excellent ones.
+
+function calculateVoyageAIScore(city){
+  const t=trips[city];
+  const vals=[
+    priceFit(t.price),
+    t.factors.hotel,
+    t.factors.location,
+    t.factors.safety,
+    t.factors.food,
+    t.factors.flight
+  ];
+
+  const geo=Math.exp(vals.reduce((sum,v)=>sum+Math.log(Math.max(v,1)),0)/vals.length);
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const min=Math.min(...vals);
+
+  // Base score rewards overall consistency, but gives the weakest category real influence.
+  let score=(geo*0.55)+(avg*0.20)+(min*0.25);
+
+  // "Excellence tax": high scores must be earned across the board.
+  // This deliberately makes 90+ uncommon.
+  if(score>=90) score = 90 + (score-90)*0.55;
+  if(score>=95) score = 95 + (score-95)*0.40;
+
+  // Additional penalties for material compromises.
+  const below85=vals.filter(v=>v<85).length;
+  const below80=vals.filter(v=>v<80).length;
+  score -= below85*0.8;
+  score -= below80*1.2;
+
+  return Math.max(40,Math.round(score));
+}
+
 function recalculate(){
- const sliderValues={
-   price:+document.getElementById('price').value,
-   hotel:+document.getElementById('hotel').value,
-   location:+document.getElementById('location').value,
-   safety:+document.getElementById('safety').value,
-   food:+document.getElementById('food').value,
-   flight:+document.getElementById('flight').value
- };
- const weights={};
- for(const k of Object.keys(sliderValues)){
-   const el=document.getElementById('w-'+k); if(el) el.textContent=weightLabel(sliderValues[k]);
-   weights[k]=weightPower(sliderValues[k]);
- }
- const totalWeight=Object.values(weights).reduce((a,b)=>a+b,0);
-
  Object.keys(trips).forEach(city=>{
-   const t=trips[city];
-   const scores={
-      price:priceFit(t.price),
-      hotel:t.factors.hotel,
-      location:t.factors.location,
-      safety:t.factors.safety,
-      food:t.factors.food,
-      flight:t.factors.flight
-   };
-   let weighted=0;
-   for(const k of Object.keys(weights)) weighted += scores[k]*weights[k];
-   let score=Math.round(weighted/totalWeight);
-
-   // Mild coherence penalty: a serious weak spot should prevent an inflated 90+.
-   const minCore=Math.min(scores.price,scores.hotel,scores.location,scores.safety,scores.food,scores.flight);
-   if(minCore<70 && score>89) score=89;
-   if(minCore<60 && score>84) score=84;
-
+   const score=calculateVoyageAIScore(city);
    currentScores[city]=score;
    const slug=city.replaceAll(' ','-');
    document.querySelector('#score-'+slug+' .scoreval').textContent=score+'%';
@@ -449,16 +419,14 @@ function recalculate(){
    badge.textContent=i===0?'BEST MATCH':i===1?'SECOND BEST':'BEST ALTERNATIVE';
  });
 
- document.getElementById('ranknote').style.display='block';
- document.getElementById('rankcopy').textContent='Live ranking based on your weighted priorities and budget fit.';
+ const rankcopy=document.getElementById('rankcopy');
+ if(rankcopy) rankcopy.textContent='Ranked across all major trip factors — every category matters.';
 }
 
 
 
-window.addEventListener('DOMContentLoaded',()=>{
-  recalculate();
-  document.getElementById('ranknote').style.display='none';
-});
+
+window.addEventListener('DOMContentLoaded',recalculate);
 </script>
 </body>
 </html>

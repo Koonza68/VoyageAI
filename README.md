@@ -1,12 +1,16 @@
-# Project VoyageAI v0.8.1 — Smarter Scoring
+# Project VoyageAI v0.8.3 — Tougher Score
 
-Changes:
-- Exponential preference weighting: 1, 2, 4, 8, 16
-- Price fit tied directly to the $2,000 trip budget
-- Wider and more meaningful score spread
-- Score bands: Exceptional, Strong, Good, Some compromises, Weak fit
-- Budget headroom shown beside each trip price
-- Live trip re-ranking remains interactive
-- Explainable VoyageAI Score reflects the new scoring model
+Scoring philosophy:
+- All major trip factors matter.
+- Weak categories have extra influence.
+- Multiple sub-85 factors create additional penalties.
+- 90+ is deliberately rare and should indicate an exceptional all-around match.
+- Score bands:
+  - 92–100 Exceptional
+  - 82–91 Strong
+  - 72–81 Good
+  - 62–71 Some compromises
+  - Below 62 Weak fit
+- Price fit remains tied to the stated $2,000 budget.
 
-Prototype only. Prices, review signals, score factors and safety indicators are illustrative.
+Prototype only. Prices, reviews, safety indicators and factor scores are illustrative.
