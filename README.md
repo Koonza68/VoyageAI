@@ -1,10 +1,12 @@
-# Project VoyageAI v0.7 — Explainable VoyageAI Score
+# Project VoyageAI v0.8 — Tune Your Match
 
 Prototype improvements:
-- Prominent VoyageAI Score
-- Clickable score explanation
-- Personalized factor breakdown
-- Hotel quality, location, price fit, flight convenience, safety & comfort, and food/lifestyle fit
-- Clear explanation that the score is personal, not a universal hotel rating
+- Interactive preference sliders
+- Live recalculation of VoyageAI Scores
+- Automatic re-ranking of trip options
+- Prominent personalized VoyageAI Score
+- Explainable score breakdown
+- Safety & Comfort weighting
+- Watch-trip concept
 
-All travel data and scores in this prototype are illustrative.
+All travel prices, reviews, scores and safety information are illustrative prototype data.
