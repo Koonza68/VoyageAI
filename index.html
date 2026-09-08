@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v1.7 — Ranked Trip Recommendations</title>
+<title>Project VoyageAI v1.8 — Live Weather Intelligence</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -248,7 +248,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.7</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.8</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -353,7 +353,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 </div>
 <div class="discovery" id="discovery"><b>🌎 Destination Discovery is on</b><p>You didn't choose a destination, so VoyageAI is searching for places that best fit the whole trip: budget, weather, hotel quality, location, safety & comfort, food/lifestyle and flight convenience.</p></div>
 <div class="liveflights" id="liveflights">
-  <div class="livehead"><div><h2>✦ VoyageAI trip ranking</h2><p>Every destination is rated across the whole trip. Click any row to see the flight and why it scored that way.</p></div><span class="livepill">TEST DATA</span></div>
+  <div class="livehead"><div><h2>✦ VoyageAI trip ranking + weather</h2><p>Every destination is rated across the whole trip, now including weather for your actual travel dates. Click any row for details.</p></div><span class="livepill">TEST DATA</span></div>
   <div id="flightstatus" class="flightstatus">Choose a destination above, or leave <b>Anywhere</b> selected, then click <b>Find my trip</b>.</div>
   <div id="flightgrid" class="flightgrid" style="display:none"></div>
 </div>
@@ -505,7 +505,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
 
-  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. VoyageAI now places the interpreted trip details directly into one editable control area. Manual changes to travellers, dates, destination and budget persist unless you change the trip request itself. Dates, destination, traveller count and budget can be adjusted there before the Cloudflare API searches Duffel Test Mode offers; VoyageAI now ranks destinations across flight, hotel, weather, food/lifestyle, safety & comfort and budget fit. Flight scoring uses Duffel Test Mode results; the non-flight destination factors remain illustrative until their live sources are connected; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
+  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. VoyageAI now places the interpreted trip details directly into one editable control area. Manual changes to travellers, dates, destination and budget persist unless you change the trip request itself. Dates, destination, traveller count and budget can be adjusted there before the Cloudflare API searches Duffel Test Mode offers; VoyageAI now ranks destinations across flight, hotel, weather, food/lifestyle, safety & comfort and budget fit. Flight scoring uses Duffel Test Mode results; weather uses Open-Meteo forecast data when available or a labelled climate planning estimate for later dates; hotel, food and safety remain illustrative until connected; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
 </section>
 </div>
 
@@ -669,6 +669,97 @@ function chooseFlightOptions(data){
 }
 
 
+
+const destinationCoords={
+  'Palm Springs':{lat:33.8303,lon:-116.5453},
+  'San Diego':{lat:32.7157,lon:-117.1611},
+  'Las Vegas':{lat:36.1716,lon:-115.1391},
+  'Los Angeles':{lat:34.0522,lon:-118.2437},
+  'Phoenix':{lat:33.4484,lon:-112.0740},
+  'Honolulu':{lat:21.3099,lon:-157.8581}
+};
+function weatherCodeLabel(code){
+  if(code===0) return 'Clear';
+  if([1,2].includes(code)) return 'Mostly clear';
+  if(code===3) return 'Cloudy';
+  if([45,48].includes(code)) return 'Fog';
+  if([51,53,55,56,57].includes(code)) return 'Drizzle';
+  if([61,63,65,66,67,80,81,82].includes(code)) return 'Rain';
+  if([71,73,75,77,85,86].includes(code)) return 'Snow';
+  if([95,96,99].includes(code)) return 'Thunderstorms';
+  return 'Mixed';
+}
+async function fetchWeather(destinationName){
+  const c=destinationCoords[destinationName];
+  if(!c) return {destinationName,weather:null,source:'none'};
+  const dep=document.getElementById('departure').value;
+  const ret=document.getElementById('returnDate').value;
+  const today=new Date();
+  const start=new Date(dep+'T12:00:00');
+  const daysAway=Math.round((start-today)/86400000);
+
+  // Open-Meteo forecast API supports up to about 16 days. For later travel,
+  // use climate normals/projections as a clearly-labelled planning estimate.
+  if(daysAway<=15){
+    const u=new URL('https://api.open-meteo.com/v1/forecast');
+    u.searchParams.set('latitude',c.lat);
+    u.searchParams.set('longitude',c.lon);
+    u.searchParams.set('daily','temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code');
+    u.searchParams.set('timezone','auto');
+    u.searchParams.set('start_date',dep);
+    u.searchParams.set('end_date',ret);
+    const r=await fetch(u.toString());
+    if(!r.ok) throw new Error('Weather forecast request failed');
+    const d=await r.json();
+    const highs=d.daily?.temperature_2m_max||[], lows=d.daily?.temperature_2m_min||[];
+    const rain=d.daily?.precipitation_probability_max||[], codes=d.daily?.weather_code||[];
+    return {destinationName,weather:{
+      mode:'forecast',
+      avgHigh:highs.length?highs.reduce((a,b)=>a+b,0)/highs.length:null,
+      avgLow:lows.length?lows.reduce((a,b)=>a+b,0)/lows.length:null,
+      rainChance:rain.length?Math.max(...rain):null,
+      label:codes.length?weatherCodeLabel(Math.max(...codes)):null
+    },source:'Open-Meteo'};
+  }
+
+  const u=new URL('https://climate-api.open-meteo.com/v1/climate');
+  u.searchParams.set('latitude',c.lat);
+  u.searchParams.set('longitude',c.lon);
+  u.searchParams.set('start_date',dep);
+  u.searchParams.set('end_date',ret);
+  u.searchParams.set('models','EC_Earth3P_HR');
+  u.searchParams.set('daily','temperature_2m_max,temperature_2m_min,precipitation_sum');
+  const r=await fetch(u.toString());
+  if(!r.ok) throw new Error('Weather climate request failed');
+  const d=await r.json();
+  const highs=d.daily?.temperature_2m_max||[], lows=d.daily?.temperature_2m_min||[], rain=d.daily?.precipitation_sum||[];
+  return {destinationName,weather:{
+    mode:'climate',
+    avgHigh:highs.length?highs.reduce((a,b)=>a+b,0)/highs.length:null,
+    avgLow:lows.length?lows.reduce((a,b)=>a+b,0)/lows.length:null,
+    rainMm:rain.length?rain.reduce((a,b)=>a+b,0):null,
+    label:'Planning estimate'
+  },source:'Open-Meteo'};
+}
+function weatherFitScore(w){
+  if(!w || w.avgHigh==null) return 80;
+  const high=w.avgHigh;
+  let score=100-Math.abs(high-27)*3.2;
+  if(w.rainChance!=null) score-=Math.max(0,w.rainChance-20)*0.22;
+  if(w.rainMm!=null) score-=Math.min(15,w.rainMm*0.6);
+  return Math.max(55,Math.min(97,Math.round(score)));
+}
+function weatherSummary(w){
+  if(!w || w.avgHigh==null) return 'Weather data unavailable';
+  const hi=Math.round(w.avgHigh), lo=Math.round(w.avgLow);
+  if(w.mode==='forecast'){
+    const rain=w.rainChance!=null?` · up to ${Math.round(w.rainChance)}% rain chance`:'';
+    return `${hi}°C avg high · ${lo}°C avg low${rain}`;
+  }
+  const rain=w.rainMm!=null?` · ~${w.rainMm.toFixed(1)} mm precipitation`:'';
+  return `${hi}°C avg high · ${lo}°C avg low${rain} · planning estimate`;
+}
+
 const destinationFactors={
   'Palm Springs':{hotel:86,weather:95,food:82,safety:84,verdict:'Best overall balance',tradeoff:'Smaller destination, but excellent warm-weather and relaxation fit.'},
   'San Diego':{hotel:91,weather:89,food:92,safety:86,verdict:'Best city experience',tradeoff:'Excellent all-around fit, usually with less budget headroom.'},
@@ -712,8 +803,9 @@ function toggleRankDetail(key){
   const row=document.getElementById('detail-'+key);
   if(row) row.classList.toggle('open');
 }
-function renderRankedTrips(results){
+function renderRankedTrips(results,weatherResults=[]){
   const budget=Number(document.getElementById('budget').value||2000);
+  const weatherMap=Object.fromEntries(weatherResults.map(x=>[x.destinationName,x.weather]));
   const prepared=results.filter(x=>x.data?.offers?.length).map(x=>{
     const picks=chooseFlightOptions(x.data);
     const main=picks.voyagePick||x.data.offers[0];
@@ -723,11 +815,13 @@ function renderRankedTrips(results){
   const minPrice=Math.min(...prepared.map(x=>x.price));
   const maxPrice=Math.max(...prepared.map(x=>x.price));
   const ranked=prepared.map(x=>{
-    const f=destinationFactors[x.destinationName]||{hotel:80,weather:80,food:80,safety:80,verdict:'Good alternative',tradeoff:'More data needed.'};
+    const f=destinationFactors[x.destinationName]||{hotel:80,food:80,safety:80,verdict:'Good alternative',tradeoff:'More data needed.'};
+    const weather=weatherMap[x.destinationName]||null;
+    const weatherScore=weatherFitScore(weather);
     const flight=flightFactor(x.price,minPrice,maxPrice,x.main);
     const budgetFit=budgetFactor(x.price,budget);
-    const score=toughTripScore([flight,f.hotel,f.weather,f.food,f.safety,budgetFit]);
-    return {...x,f,flight,budgetFit,score};
+    const score=toughTripScore([flight,f.hotel,weatherScore,f.food,f.safety,budgetFit]);
+    return {...x,f,weather,weatherScore,flight,budgetFit,score};
   }).sort((a,b)=>b.score-a.score || a.price-b.price);
 
   const winner=ranked[0];
@@ -742,7 +836,7 @@ function renderRankedTrips(results){
       <td><span class="scorecircle">${x.score}</span></td>
       <td><span class="factor ${factorClass(x.flight)}">${x.flight}</span></td>
       <td><span class="factor ${factorClass(x.f.hotel)}">${x.f.hotel}</span></td>
-      <td><span class="factor ${factorClass(x.f.weather)}">${x.f.weather}</span></td>
+      <td><span class="factor ${factorClass(x.weatherScore)}">${x.weatherScore}</span><span class="destsub">${weatherSummary(x.weather)}</span></td>
       <td><span class="factor ${factorClass(x.f.food)}">${x.f.food}</span></td>
       <td><span class="factor ${factorClass(x.f.safety)}">${x.f.safety}</span></td>
       <td><span class="factor ${factorClass(x.budgetFit)}">${x.budgetFit}</span></td>
@@ -758,7 +852,7 @@ function renderRankedTrips(results){
           </div>
           <div class="detailbox">
             <h4>Why it scored ${x.score}</h4>
-            <p>${x.f.tradeoff}<br><br><b>Flight score ${x.flight}</b> uses the Duffel test offer price, stops and travel time. Hotel, weather, food and safety factors are still illustrative until those live data sources are connected.</p>
+            <p>${x.f.tradeoff}<br><br><b>Flight score ${x.flight}</b> uses the Duffel test offer price, stops and travel time. Weather now uses live Open-Meteo data when the trip falls inside the forecast window, or a clearly labelled climate planning estimate for later dates. Hotel, food and safety factors are still illustrative until those live data sources are connected.</p>
           </div>
         </div>
       </td>
@@ -769,7 +863,7 @@ function renderRankedTrips(results){
     <div class="winner-card">
       <div class="winner-kicker">★ VoyageAI recommendation</div>
       <div class="winner-main">
-        <div><h3>${winner.destinationName}</h3><p>${winner.f.verdict}. VoyageAI rated every destination across flight quality, hotel quality, weather, food/lifestyle, safety & comfort and budget fit — not airfare alone.</p><div class="score-note">Live Duffel test flight data + illustrative destination factors for this prototype.</div></div>
+        <div><h3>${winner.destinationName}</h3><p>${winner.f.verdict}. VoyageAI rated every destination across flight quality, hotel quality, weather, food/lifestyle, safety & comfort and budget fit — not airfare alone.</p><div class="score-note">Duffel test flight data + Open-Meteo weather + illustrative hotel, food and safety factors.</div></div>
         <div class="winner-score"><strong>${winner.score}</strong><span>VOYAGEAI SCORE / 100</span></div>
       </div>
     </div>
@@ -857,13 +951,17 @@ async function loadLiveFlights(){
   const grid=document.getElementById('flightgrid');
   status.className='flightstatus';
   status.style.display='block';
-  status.innerHTML='Searching Duffel test inventory using your selected dates and travellers…';
+  status.innerHTML='Comparing Duffel test flights and destination weather for your selected dates…';
   grid.style.display='none';
   grid.innerHTML='';
   try{
-    const results=await Promise.all(names.map(fetchFlight));
+    const [results,weatherResults]=await Promise.all([
+      Promise.all(names.map(fetchFlight)),
+      Promise.all(names.map(fetchWeather))
+    ]);
     window.__liveFlightResults=results;
-    grid.innerHTML=renderRankedTrips(results);
+    window.__liveWeatherResults=weatherResults;
+    grid.innerHTML=renderRankedTrips(results,weatherResults);
     grid.style.display='grid';
     status.style.display='none';
   }catch(err){
