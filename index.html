@@ -474,6 +474,12 @@ async function fetchFlight(destinationName){
   if(!r.ok || !data.success) throw new Error(data?.error?.message || data?.error || 'Flight search failed');
   return {destinationName,data};
 }
+function prettyDate(value){
+  if(!value) return '';
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'});
+}
 function routeSummary(leg){
   if(!leg) return {text:'Route details unavailable', badge:'', stop:false};
   const stops=Number(leg.stops||0);
@@ -529,7 +535,7 @@ function flightCard(destinationName,data){
     <div class="flightprice">${offer.price.display} <small style="font-size:11px;color:var(--muted)">CAD total</small></div>
     <div class="sourcefare">For ${travellers} traveller${travellers===1?'':'s'} · C$${perPerson.toFixed(2)} per person · Source fare ${offer.price.source_amount} ${offer.price.source_currency} · FX ${data.pricing.usd_to_cad_rate}</div>
     <div class="${bothNonstop?'routebadge':'routebadge stop'}">${bothNonstop?'NONSTOP BOTH WAYS':'STOPS INCLUDED'}</div>
-    <div class="flightmeta" style="margin-top:9px"><b>Outbound:</b> ${out.from} ${prettyTime(out.departure)} → ${out.to} ${prettyTime(out.arrival)} · ${outRoute.text}<br><b>Return:</b> ${ret.from||''} ${prettyTime(ret.departure)} → ${ret.to||''} ${prettyTime(ret.arrival)} · ${retRoute.text}</div>
+    <div class="flightmeta" style="margin-top:9px"><b>Outbound · ${prettyDate(out.departure)}:</b> ${out.from} ${prettyTime(out.departure)} → ${out.to} ${prettyTime(out.arrival)} · ${outRoute.text}<br><b>Return · ${prettyDate(ret.departure)}:</b> ${ret.from||''} ${prettyTime(ret.departure)} → ${ret.to||''} ${prettyTime(ret.arrival)} · ${retRoute.text}</div>
     <span class="flighttag">Duffel test offer</span>
     ${alt}
   </div>`;
