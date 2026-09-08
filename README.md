@@ -1,10 +1,15 @@
-# Project VoyageAI v0.9 — Compare Destinations
+# Project VoyageAI v1.0 — Watch This Trip
 
-Adds:
-- Select 2–3 destinations for comparison
-- Side-by-side VoyageAI Score, total price, budget headroom, hotel, location, safety, food, flights and weather
-- Best-for and trade-off rows
-- VoyageAI recommendation based on overall score
-- Retains Destination Discovery and tougher scoring
+Core loop now demonstrated:
+ASK → DISCOVER → SCORE → COMPARE → WATCH
 
-Prototype data is illustrative.
+New in v1.0:
+- Watch This Trip on each destination
+- Started/current/lowest-seen price
+- Price-change signal
+- Illustrative price-history chart
+- Good Value / Strong Value / Watching signals
+- Meaningful-change alert philosophy
+- Existing destination comparison and tougher VoyageAI Score retained
+
+Prototype only. Prices, price history, reviews, safety indicators and scoring inputs are illustrative.
