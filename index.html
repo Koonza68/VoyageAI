@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v0.8.4 — Destination Discovery</title>
+<title>Project VoyageAI v0.9 — Compare Destinations</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -97,12 +97,30 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 
 
 .routebox{display:grid;grid-template-columns:1fr 48px 1fr;gap:12px;align-items:end;margin:0 0 14px}.routefield{border:1px solid var(--line);background:#fff;border-radius:16px;padding:12px 14px}.routelabel{font-size:10px;font-weight:900;letter-spacing:.09em;color:var(--muted);margin-bottom:5px}.routevalue{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:900}.routesub{font-size:11.5px;color:var(--muted);margin:3px 0 0 25px}.routearrow{text-align:center;font-size:24px;color:var(--match);padding-bottom:18px}.routefield select{border:0;background:transparent;font:inherit;font-weight:900;color:var(--ink);width:100%;outline:none}.discovery{border:1px solid #e6ddff;background:linear-gradient(135deg,#fbf9ff,#f7fbff);border-radius:16px;padding:14px 16px;margin:0 0 16px}.discovery b{font-size:13px}.discovery p{margin:4px 0 0;color:var(--muted);font-size:12.5px;line-height:1.5}.chosenwhy{margin-top:10px;padding:10px 11px;border-radius:11px;background:#f7f5ff;border:1px solid #ebe5ff;font-size:12px;line-height:1.45;color:#555f73}.chosenwhy b{color:var(--ink)}@media(max-width:650px){.routebox{grid-template-columns:1fr}.routearrow{padding:0;transform:rotate(90deg)}}
+
+.comparebar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 0 12px;padding:14px 16px;border:1px solid #dfe5ef;border-radius:15px;background:#fff}
+.comparebar b{font-size:14px}.comparebar span{font-size:12px;color:var(--muted)}
+.comparebtn{border:0;border-radius:11px;background:var(--match);color:white;padding:10px 14px;font-weight:850;cursor:pointer}
+.comparebtn:disabled{opacity:.45;cursor:not-allowed}
+.pickcompare{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11.5px;font-weight:800;color:var(--muted)}
+.pickcompare input{accent-color:var(--match)}
+.comparepanel{display:none;border:1px solid #ded7fb;background:#fff;border-radius:18px;padding:18px;margin:18px 0}
+.comparehead{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:14px}.comparehead h2{margin:0;font-size:22px}.comparehead p{margin:4px 0 0;color:var(--muted);font-size:12.5px}
+.closecompare{border:1px solid var(--line);background:white;border-radius:10px;padding:8px 10px;cursor:pointer}
+.comparetable{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid var(--line);border-radius:14px}
+.comparetable th,.comparetable td{padding:11px 12px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);font-size:12px;vertical-align:top}
+.comparetable th:last-child,.comparetable td:last-child{border-right:0}.comparetable tr:last-child td{border-bottom:0}
+.comparetable th{background:#f8f9fc;text-align:left;font-size:13px}.comparetable td:first-child{font-weight:850;background:#fbfcfe;width:145px}
+.winner{background:#f3f0ff!important}.scorecell{font-size:20px!important;font-weight:950;color:var(--match)}
+.recommend{margin-top:14px;border-radius:14px;background:linear-gradient(135deg,#f5f1ff,#f7fbff);border:1px solid #e5dcff;padding:14px}
+.recommend h3{margin:0 0 7px;font-size:15px}.recommend p{margin:0;color:#536076;font-size:12.5px;line-height:1.5}
+@media(max-width:700px){.comparepanel{overflow-x:auto}.comparetable{min-width:690px}.comparebar{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v0.8.4</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v0.9</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -157,7 +175,16 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
 
 
-  <div class="cards">
+  
+<div class="comparebar">
+ <div><b>Compare your best matches</b><br><span>Select 2 or 3 destinations to see exactly where each one wins and compromises.</span></div>
+ <button class="comparebtn" id="comparebtn" onclick="showComparison()" disabled>Compare destinations</button>
+</div>
+<div class="comparepanel" id="comparepanel">
+ <div class="comparehead"><div><h2>Destination comparison</h2><p>Same trip request. Same tough VoyageAI scoring standard. Different trade-offs.</p></div><button class="closecompare" onclick="document.getElementById('comparepanel').style.display='none'">✕</button></div>
+ <div id="comparecontent"></div>
+</div>
+<div class="cards">
     <div class="card" id="card-Palm-Springs" data-city="Palm Springs">
       <div class="badge" id="badge1">BEST OVERALL</div><div class="photo">Palm Springs, California</div>
       <div class="body">
@@ -172,7 +199,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
           <div class="safetytitle"><span>🛡 Traveller comfort</span><span>Very good</span></div>
           <ul><li>24-hour front desk</li><li>Active central area near restaurants</li><li>Simple rideshare/taxi pickup</li></ul>
         </div>
-        <div class="chosenwhy"><b>Why VoyageAI chose Palm Springs</b><br>Warm weather, strong vegan dining, a central hotel and a total price comfortably below budget make this the best-balanced discovery.</div><div class="verdict"><div class="whytitle"><b>Why it matches you</b><b id="vscore-Palm-Springs">94%</b></div><div class="fitline"><span id="vbar-Palm-Springs" style="width:94%"></span></div>Excellent hotel reviews, central location, 12 vegan options nearby and a comfortable total price below your budget. <b>Only trade-off:</b> not the cheapest option.</div>
+        <label class="pickcompare"><input type="checkbox" class="comparecheck" value="Palm Springs" onchange="updateCompareButton()"> Compare Palm Springs</label><div class="chosenwhy"><b>Why VoyageAI chose Palm Springs</b><br>Warm weather, strong vegan dining, a central hotel and a total price comfortably below budget make this the best-balanced discovery.</div><div class="verdict"><div class="whytitle"><b>Why it matches you</b><b id="vscore-Palm-Springs">94%</b></div><div class="fitline"><span id="vbar-Palm-Springs" style="width:94%"></span></div>Excellent hotel reviews, central location, 12 vegan options nearby and a comfortable total price below your budget. <b>Only trade-off:</b> not the cheapest option.</div>
         <div class="actions"><button class="outline" onclick="showDetails('Palm Springs')">Safety details</button><button class="watch" onclick="watch('Palm Springs','$1,742')">♡ Watch</button></div>
       </div>
     </div>
@@ -191,7 +218,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
           <div class="safetytitle"><span>🛡 Traveller comfort</span><span>Excellent</span></div>
           <ul><li>Highly active hotel area</li><li>Strong late-evening transport options</li><li>Restaurants very close to hotel</li></ul>
         </div>
-        <div class="chosenwhy"><b>Why VoyageAI chose San Diego</b><br>Excellent hotel quality, walkability, safety/comfort and food fit put this high on the list, though it uses almost the full budget.</div><div class="verdict"><div class="whytitle"><b>Why it matches you</b><b id="vscore-San-Diego">92%</b></div><div class="fitline"><span id="vbar-San-Diego" style="width:92%"></span></div>Your strongest hotel and neighbourhood fit, with 21 vegan options nearby. <b>Trade-off:</b> it uses almost all of your $2,000 budget.</div>
+        <label class="pickcompare"><input type="checkbox" class="comparecheck" value="San Diego" onchange="updateCompareButton()"> Compare San Diego</label><div class="chosenwhy"><b>Why VoyageAI chose San Diego</b><br>Excellent hotel quality, walkability, safety/comfort and food fit put this high on the list, though it uses almost the full budget.</div><div class="verdict"><div class="whytitle"><b>Why it matches you</b><b id="vscore-San-Diego">92%</b></div><div class="fitline"><span id="vbar-San-Diego" style="width:92%"></span></div>Your strongest hotel and neighbourhood fit, with 21 vegan options nearby. <b>Trade-off:</b> it uses almost all of your $2,000 budget.</div>
         <div class="actions"><button class="outline" onclick="showDetails('San Diego')">Safety details</button><button class="watch" onclick="watch('San Diego','$1,914')">♡ Watch</button></div>
       </div>
     </div>
@@ -210,7 +237,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
           <div class="safetytitle"><span>🛡 Traveller comfort</span><span>Good</span></div>
           <ul><li>Busy resort corridor</li><li>Easy taxi/rideshare access</li><li>VoyageAI favours rideshare late at night</li></ul>
         </div>
-        <div class="chosenwhy"><b>Why VoyageAI chose Las Vegas</b><br>Excellent airfare and total price earn it a place in the results, though hotel quality and safety/comfort are weaker than the top choices.</div><div class="verdict"><div class="whytitle"><b>Why it matches you</b><b id="vscore-Las-Vegas">86%</b></div><div class="fitline"><span id="vbar-Las-Vegas" style="width:86%"></span></div>Best price and easy flights, with plenty of vegan choices. <b>Trade-off:</b> hotel/comfort fit is weaker than Palm Springs or San Diego.</div>
+        <label class="pickcompare"><input type="checkbox" class="comparecheck" value="Las Vegas" onchange="updateCompareButton()"> Compare Las Vegas</label><div class="chosenwhy"><b>Why VoyageAI chose Las Vegas</b><br>Excellent airfare and total price earn it a place in the results, though hotel quality and safety/comfort are weaker than the top choices.</div><div class="verdict"><div class="whytitle"><b>Why it matches you</b><b id="vscore-Las-Vegas">86%</b></div><div class="fitline"><span id="vbar-Las-Vegas" style="width:86%"></span></div>Best price and easy flights, with plenty of vegan choices. <b>Trade-off:</b> hotel/comfort fit is weaker than Palm Springs or San Diego.</div>
         <div class="actions"><button class="outline" onclick="showDetails('Las Vegas')">Safety details</button><button class="watch" onclick="watch('Las Vegas','$1,486')">♡ Watch</button></div>
       </div>
     </div>
@@ -444,7 +471,43 @@ function destinationChanged(){
  if(v==='Anywhere'){all.forEach(c=>document.getElementById('card-'+c.replaceAll(' ','-')).style.display='block');recalculate();}
  else{all.forEach(c=>document.getElementById('card-'+c.replaceAll(' ','-')).style.display=c===v?'block':'none');bestCity=v;document.getElementById('heroScore').textContent=currentScores[v]+'%';document.getElementById('heroBest').textContent=v+' · Your selected destination';}
 }
-window.addEventListener('DOMContentLoaded',()=>{recalculate();destinationChanged();});
+
+const compareExtras={
+ 'Palm Springs':{weather:'Warm & sunny',budget:'$258 under',best:'Best balance',trade:'Flight convenience is good, not outstanding'},
+ 'San Diego':{weather:'Mild & coastal',budget:'$86 under',best:'Best experience',trade:'Very little budget headroom'},
+ 'Las Vegas':{weather:'Warm & dry',budget:'$514 under',best:'Best value',trade:'Weaker safety/comfort and hotel fit'}
+};
+function updateCompareButton(){
+ const n=document.querySelectorAll('.comparecheck:checked').length;
+ const b=document.getElementById('comparebtn');
+ b.disabled=n<2; b.textContent=n<2?'Compare destinations':`Compare ${n} destinations`;
+}
+function showComparison(){
+ const selected=[...document.querySelectorAll('.comparecheck:checked')].map(x=>x.value);
+ if(selected.length<2)return;
+ const rows=[
+  ['VoyageAI Score',c=>currentScores[c]+'%'],
+  ['Total trip',c=>'$'+trips[c].price.toLocaleString()+' CAD'],
+  ['Budget position',c=>compareExtras[c].budget],
+  ['Hotel quality',c=>trips[c].factors.hotel+'/100'],
+  ['Location',c=>trips[c].factors.location+'/100'],
+  ['Safety & comfort',c=>trips[c].factors.safety+'/100'],
+  ['Food & lifestyle',c=>trips[c].factors.food+'/100'],
+  ['Flight convenience',c=>trips[c].factors.flight+'/100'],
+  ['Weather',c=>compareExtras[c].weather],
+  ['Best for',c=>compareExtras[c].best],
+  ['Main trade-off',c=>compareExtras[c].trade]
+ ];
+ const winner=selected.sort((a,b)=>currentScores[b]-currentScores[a])[0];
+ let table='<table class="comparetable"><thead><tr><th>Factor</th>'+selected.map(c=>`<th class="${c===winner?'winner':''}">${c}</th>`).join('')+'</tr></thead><tbody>';
+ rows.forEach((r,i)=>{table+='<tr><td>'+r[0]+'</td>'+selected.map(c=>`<td class="${c===winner?'winner':''} ${i===0?'scorecell':''}">${r[1](c)}</td>`).join('')+'</tr>'});
+ table+='</tbody></table>';
+ table+=`<div class="recommend"><h3>🏆 VoyageAI recommends ${winner}</h3><p>${trips[winner].why} It currently offers the strongest overall fit across all the factors in your request—not simply the lowest price.</p></div>`;
+ document.getElementById('comparecontent').innerHTML=table;
+ document.getElementById('comparepanel').style.display='block';
+ document.getElementById('comparepanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.addEventListener('DOMContentLoaded',()=>{recalculate();destinationChanged();updateCompareButton();});
 </script>
 </body>
 </html>

@@ -1,3 +1,10 @@
-# Project VoyageAI v0.8.4 — Destination Discovery
+# Project VoyageAI v0.9 — Compare Destinations
 
-Adds FROM / TO, TO Anywhere discovery, specific destination selection, and Why VoyageAI chose this destination explanations. Prototype data is illustrative.
+Adds:
+- Select 2–3 destinations for comparison
+- Side-by-side VoyageAI Score, total price, budget headroom, hotel, location, safety, food, flights and weather
+- Best-for and trade-off rows
+- VoyageAI recommendation based on overall score
+- Retains Destination Discovery and tougher scoring
+
+Prototype data is illustrative.
