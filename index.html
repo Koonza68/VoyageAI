@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v1.1 — Live Flights</title>
+<title>Project VoyageAI v1.2 — Smart Search Controls</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -122,12 +122,22 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 
 .liveflights{margin:18px 0;border:1px solid #dbe3f4;border-radius:18px;padding:18px;background:linear-gradient(135deg,#f8fbff,#fbf9ff)}
 .livehead{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:12px}.livehead h2{margin:0;font-size:22px}.livehead p{margin:4px 0 0;color:var(--muted);font-size:12.5px}.livepill{font-size:10px;font-weight:900;letter-spacing:.06em;padding:7px 9px;border-radius:99px;background:#fff3d9;color:#8a5b00;white-space:nowrap}.flightstatus{padding:13px;border:1px dashed #ccd5e6;border-radius:12px;color:var(--muted);font-size:13px;background:white}.flightgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.flightcard{border:1px solid var(--line);border-radius:14px;padding:14px;background:white}.flightcard h3{margin:0 0 3px;font-size:17px}.flightprice{font-size:25px;font-weight:900;margin:10px 0 4px}.flightmeta{font-size:12px;color:var(--muted);line-height:1.5}.flighttag{display:inline-block;margin-top:8px;font-size:10px;font-weight:850;background:var(--goodsoft);color:var(--good);padding:5px 7px;border-radius:99px}.liveerror{color:#9b2c2c;background:#fff5f5;border-color:#f2cccc}.sourcefare{font-size:10px;color:var(--muted);margin-top:2px}@media(max-width:840px){.flightgrid{grid-template-columns:1fr}.livehead{flex-direction:column}}
+
+.searchcontrols{max-width:860px;margin:14px auto 0;display:grid;grid-template-columns:1.25fr 1.45fr 1fr 1fr .8fr 1fr;gap:9px;text-align:left}
+.searchfield{border:1px solid var(--line);background:#fff;border-radius:13px;padding:9px 10px;min-width:0}
+.searchfield label{display:block;font-size:9px;font-weight:900;letter-spacing:.07em;color:#8a93a3;margin-bottom:4px;text-transform:uppercase}
+.searchfield input,.searchfield select{width:100%;border:0;outline:0;background:transparent;color:var(--ink);font-size:13px;font-weight:750;padding:0;min-width:0}
+.searchfield .fixedvalue{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.searchhelper{max-width:860px;margin:7px auto 0;text-align:left;color:#8a93a3;font-size:11px}
+@media(max-width:840px){.searchcontrols{grid-template-columns:1fr 1fr}.searchfield.tofield{grid-column:span 2}}
+@media(max-width:520px){.searchcontrols{grid-template-columns:1fr}.searchfield.tofield{grid-column:span 1}}
+
 </style>
 </head>
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.1</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.2</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -142,6 +152,47 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
       <button class="primary" onclick="searchTrips()">Find my trip →</button>
     </div>
   </div>
+
+  <div class="searchcontrols">
+    <div class="searchfield">
+      <label>From</label>
+      <div class="fixedvalue">✈ YVR · Vancouver</div>
+      <input type="hidden" id="origin" value="YVR">
+    </div>
+    <div class="searchfield tofield">
+      <label>To</label>
+      <select id="destination" onchange="destinationChanged('main')">
+        <option>Anywhere</option>
+        <option>Palm Springs</option>
+        <option>San Diego</option>
+        <option>Las Vegas</option>
+      </select>
+    </div>
+    <div class="searchfield">
+      <label>Departure</label>
+      <input id="departure" type="date" onchange="syncSearchControls()">
+    </div>
+    <div class="searchfield">
+      <label>Return</label>
+      <input id="returnDate" type="date" onchange="syncSearchControls()">
+    </div>
+    <div class="searchfield">
+      <label>Travellers</label>
+      <select id="travellers" onchange="syncSearchControls()">
+        <option value="1">1</option>
+        <option value="2" selected>2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
+    </div>
+    <div class="searchfield">
+      <label>Budget CAD</label>
+      <input id="budget" type="number" min="250" step="50" value="2000" onchange="syncSearchControls()">
+    </div>
+  </div>
+  <div class="searchhelper">These controls now drive the flight search. Natural-language auto-fill comes next.</div>
 
   <div class="prefbox">
     <div class="togglecard">
@@ -160,17 +211,17 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     <button class="ghost" onclick="editSearch()">← Change request</button>
   </div>
 
-  <div class="matchintro"><b>✨ Your Match profile</b><p>For this search, VoyageAI is prioritizing a warm 5-day getaway from Vancouver for two, under $2,000 CAD, with a great hotel and strong vegan options nearby. The VoyageAI Score shows how well each trip performs across everything that matters — price, hotel, location, safety, food and flights.</p><div class="hero-score"><div class="hero-score-num" id="heroScore" onclick="showScore(bestCity,currentScores[bestCity])" style="cursor:pointer">94%</div><div><div class="hero-score-label">VOYAGEAI SCORE</div><div class="hero-score-copy"><span id="heroBest">Palm Springs · Best current match</span> · <button class="ghost" style="padding:5px 8px;margin-top:6px" onclick="showScore(bestCity,currentScores[bestCity])">See why →</button></div></div></div></div>
+  <div class="matchintro"><b>✨ Your Match profile</b><p id="matchProfile">For this search, VoyageAI is prioritizing a warm 5-day getaway from Vancouver for two, under $2,000 CAD, with a great hotel and strong vegan options nearby. The VoyageAI Score shows how well each trip performs across everything that matters — price, hotel, location, safety, food and flights.</p><div class="hero-score"><div class="hero-score-num" id="heroScore" onclick="showScore(bestCity,currentScores[bestCity])" style="cursor:pointer">94%</div><div><div class="hero-score-label">VOYAGEAI SCORE</div><div class="hero-score-copy"><span id="heroBest">Palm Springs · Best current match</span> · <button class="ghost" style="padding:5px 8px;margin-top:6px" onclick="showScore(bestCity,currentScores[bestCity])">See why →</button></div></div></div></div>
 
   <div class="summary">
-    <span>5 days</span><span>2 travellers</span><span>From YVR</span><span>Under $2,000 CAD</span><span>Warm weather</span><span>Vegan-friendly area</span><span id="safetytag" style="display:none">🛡 Safety & comfort priority</span>
+    <span id="daysChip">5 days</span><span id="travellersChip">2 travellers</span><span id="originChip">From YVR</span><span id="budgetChip">Under $2,000 CAD</span><span>Warm weather</span><span>Vegan-friendly area</span><span id="safetytag" style="display:none">🛡 Safety & comfort priority</span>
   </div>
 
   
 <div class="routebox">
  <div class="routefield"><div class="routelabel">FROM</div><div class="routevalue">✈ <span>YVR</span></div><div class="routesub">Vancouver, BC</div></div>
  <div class="routearrow">→</div>
- <div class="routefield"><div class="routelabel">TO</div><div class="routevalue">⌖ <select id="destination" onchange="destinationChanged()"><option>Anywhere</option><option>Palm Springs</option><option>San Diego</option><option>Las Vegas</option></select></div><div class="routesub" id="tosub">Explore all destinations</div></div>
+ <div class="routefield"><div class="routelabel">TO</div><div class="routevalue">⌖ <select id="destinationResults" onchange="destinationChanged('results')"><option>Anywhere</option><option>Palm Springs</option><option>San Diego</option><option>Las Vegas</option></select></div><div class="routesub" id="tosub">Explore all destinations</div></div>
 </div>
 <div class="discovery" id="discovery"><b>🌎 Destination Discovery is on</b><p>You didn't choose a destination, so VoyageAI is searching for places that best fit the whole trip: budget, weather, hotel quality, location, safety & comfort, food/lifestyle and flight convenience.</p></div>
 <div class="liveflights" id="liveflights">
@@ -326,7 +377,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
 
-  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. The flight panel now calls the VoyageAI Cloudflare API and displays Duffel Test Mode offers; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
+  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. The flight panel now calls the VoyageAI Cloudflare API using the departure date, return date, traveller count and destination selected above, and displays Duffel Test Mode offers; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
 </section>
 </div>
 
@@ -357,9 +408,52 @@ function prettyTime(v){
   const d=new Date(v);
   return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
 }
+function getSearchParams(){
+  return {
+    origin:document.getElementById('origin').value,
+    destination:document.getElementById('destination').value,
+    departure:document.getElementById('departure').value,
+    returnDate:document.getElementById('returnDate').value,
+    travellers:document.getElementById('travellers').value,
+    budget:Number(document.getElementById('budget').value||0)
+  };
+}
+function tripDays(departure,returnDate){
+  const a=new Date(departure+'T12:00:00');
+  const b=new Date(returnDate+'T12:00:00');
+  return Math.max(1,Math.round((b-a)/86400000));
+}
+function syncSearchControls(source){
+  const main=document.getElementById('destination');
+  const results=document.getElementById('destinationResults');
+  if(source==='results' && results) main.value=results.value;
+  if(results) results.value=main.value;
+  const p=getSearchParams();
+  if(p.departure && p.returnDate && p.returnDate<=p.departure){
+    const d=new Date(p.departure+'T12:00:00'); d.setDate(d.getDate()+5);
+    document.getElementById('returnDate').value=d.toISOString().slice(0,10);
+  }
+  const fresh=getSearchParams();
+  const days=fresh.departure&&fresh.returnDate?tripDays(fresh.departure,fresh.returnDate):5;
+  const tc=Number(fresh.travellers);
+  const fmt=new Intl.NumberFormat('en-CA').format(fresh.budget||0);
+  const el=id=>document.getElementById(id);
+  if(el('daysChip')) el('daysChip').textContent=days+' day'+(days===1?'':'s');
+  if(el('travellersChip')) el('travellersChip').textContent=tc+' traveller'+(tc===1?'':'s');
+  if(el('originChip')) el('originChip').textContent='From '+fresh.origin;
+  if(el('budgetChip')) el('budgetChip').textContent='Under $'+fmt+' CAD';
+  if(el('matchProfile')) el('matchProfile').textContent=`For this search, VoyageAI is using ${fresh.origin} → ${fresh.destination}, ${days} day${days===1?'':'s'}, ${tc} traveller${tc===1?'':'s'}, and a $${fmt} CAD budget. The VoyageAI Score still uses the illustrative destination factors below while the live flight panel uses your actual search controls.`;
+}
 async function fetchFlight(destinationName){
+  const p=getSearchParams();
   const code=destinationCodes[destinationName];
-  const q=new URLSearchParams({origin:'YVR',destination:code,departure:'2026-10-12',return:'2026-10-17',travellers:'2'});
+  const q=new URLSearchParams({
+    origin:p.origin,
+    destination:code,
+    departure:p.departure,
+    return:p.returnDate,
+    travellers:p.travellers
+  });
   const r=await fetch(VOYAGE_API+'?'+q.toString());
   const data=await r.json();
   if(!r.ok || !data.success) throw new Error(data?.error?.message || data?.error || 'Flight search failed');
@@ -387,7 +481,7 @@ async function loadLiveFlights(){
   const grid=document.getElementById('flightgrid');
   status.className='flightstatus';
   status.style.display='block';
-  status.innerHTML='Searching Duffel test inventory…';
+  status.innerHTML='Searching Duffel test inventory using your selected dates and travellers…';
   grid.style.display='none';
   grid.innerHTML='';
   try{
@@ -400,7 +494,17 @@ async function loadLiveFlights(){
     status.textContent='Live flight search could not load: '+err.message;
   }
 }
+function validateSearch(){
+  const p=getSearchParams();
+  if(!p.departure || !p.returnDate) return 'Please choose departure and return dates.';
+  if(p.returnDate<=p.departure) return 'Return date must be after departure date.';
+  if(p.budget<250) return 'Please enter a trip budget of at least C$250.';
+  return '';
+}
 function searchTrips(){
+  const error=validateSearch();
+  if(error){alert(error);return;}
+  syncSearchControls();
   document.getElementById('results').style.display='block';
   document.querySelector('.flow').innerHTML='<span>ASK</span><i></i><b>MATCH</b><i></i><span>WATCH</span>';
   document.getElementById('results').scrollIntoView({behavior:'smooth'});
@@ -557,13 +661,24 @@ function recalculate(){
 
 
 
-function destinationChanged(){
- const v=document.getElementById('destination').value, all=['Palm Springs','San Diego','Las Vegas'];
- document.getElementById('tochip').textContent='To '+v;
+function destinationChanged(source='main'){
+ const main=document.getElementById('destination');
+ const results=document.getElementById('destinationResults');
+ if(source==='results' && results) main.value=results.value;
+ if(results) results.value=main.value;
+ const v=main.value, all=['Palm Springs','San Diego','Las Vegas'];
  document.getElementById('discovery').style.display=v==='Anywhere'?'block':'none';
  document.getElementById('tosub').textContent=v==='Anywhere'?'Explore all destinations':'Selected destination';
- if(v==='Anywhere'){all.forEach(c=>document.getElementById('card-'+c.replaceAll(' ','-')).style.display='block');recalculate();}
- else{all.forEach(c=>document.getElementById('card-'+c.replaceAll(' ','-')).style.display=c===v?'block':'none');bestCity=v;document.getElementById('heroScore').textContent=currentScores[v]+'%';document.getElementById('heroBest').textContent=v+' · Your selected destination';}
+ if(v==='Anywhere'){
+   all.forEach(c=>document.getElementById('card-'+c.replaceAll(' ','-')).style.display='block');
+   recalculate();
+ }else{
+   all.forEach(c=>document.getElementById('card-'+c.replaceAll(' ','-')).style.display=c===v?'block':'none');
+   bestCity=v;
+   document.getElementById('heroScore').textContent=currentScores[v]+'%';
+   document.getElementById('heroBest').textContent=v+' · Your selected destination';
+ }
+ syncSearchControls();
 }
 
 const compareExtras={
@@ -621,7 +736,21 @@ function watchTrip(city){
  document.getElementById('watchpanel').style.display='block';
  document.getElementById('watchpanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
-window.addEventListener('DOMContentLoaded',()=>{recalculate();destinationChanged();updateCompareButton();});
+window.addEventListener('DOMContentLoaded',()=>{
+ const dep=document.getElementById('departure');
+ const ret=document.getElementById('returnDate');
+ const today=new Date();
+ const d=new Date(today); d.setDate(d.getDate()+30);
+ const r=new Date(d); r.setDate(r.getDate()+5);
+ dep.min=today.toISOString().slice(0,10);
+ ret.min=today.toISOString().slice(0,10);
+ dep.value=d.toISOString().slice(0,10);
+ ret.value=r.toISOString().slice(0,10);
+ recalculate();
+ destinationChanged('main');
+ syncSearchControls();
+ updateCompareButton();
+});
 </script>
 </body>
 </html>
