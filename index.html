@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v1.5 — Flight Intelligence</title>
+<title>Project VoyageAI v1.6 — Expanded Destination Discovery</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -183,12 +183,34 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 .choicewhy{font-size:9px;color:#4d5667;line-height:1.4;margin-top:6px}
 @media(max-width:760px){.flightchoices{grid-template-columns:1fr}}
 
+
+#flightgrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+.tripoption{border:1px solid #e1e6ee;border-radius:16px;padding:15px;background:#fff;min-width:0}
+.triptop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.triptop h3{margin:0;font-size:17px}
+.airline{font-size:10px;color:#667085;margin-top:3px}
+.testpill{font-size:8px;font-weight:900;letter-spacing:.04em;padding:5px 7px;border-radius:999px;background:#fff4d8;color:#8b5a00;white-space:nowrap}
+.badgerow{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}
+.smartbadge{font-size:8px;font-weight:900;border-radius:999px;padding:5px 7px}
+.smartbadge.pick{background:#edf8ef;color:#177345}.smartbadge.cheap{background:#fff4e5;color:#985a00}.smartbadge.nonstop{background:#edf6ff;color:#145c8a}
+.priceblock{display:flex;align-items:flex-end;gap:10px;padding:2px 0 11px}
+.bigprice{font-size:27px;line-height:1;font-weight:950;letter-spacing:-.03em}
+.pricecopy{font-size:9px;line-height:1.4;color:#667085}
+.itinerary{border-top:1px solid #eef1f5;border-bottom:1px solid #eef1f5;padding:10px 0;display:grid;gap:9px}
+.leg{display:grid;gap:2px;font-size:10px}.leglabel{font-size:8px;font-weight:900;letter-spacing:.04em;color:#8a93a3}.leg span:last-child{color:#667085}
+.whybox{margin-top:10px;background:#f8faff;border-radius:11px;padding:9px 10px;display:grid;gap:3px}.whybox b{font-size:9px}.whybox span{font-size:9px;color:#667085;line-height:1.4}
+.alternatives{margin-top:10px}.altheading{font-size:8px;font-weight:900;color:#8a93a3;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.altrow{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid #eef1f5}.altrow>div:first-child{display:grid;gap:2px;min-width:0}.altrow b{font-size:9px}.altrow span{font-size:8px;color:#667085}
+.altprice{font-size:10px;font-weight:900;text-align:right;white-space:nowrap}.altprice small{display:block;font-size:7px;color:#8a93a3;font-weight:700}
+.farefoot{font-size:7px;color:#98a0ae;margin-top:9px}.emptymsg{font-size:10px;color:#667085}
+@media(max-width:820px){#flightgrid{grid-template-columns:1fr!important}}
+
 </style>
 </head>
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.5</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.6</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -223,12 +245,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 
       <div class="smartcontrol">
         <label>To</label>
-        <select id="destination" onchange="destinationChanged('main')">
-          <option>Anywhere</option>
-          <option>Palm Springs</option>
-          <option>San Diego</option>
-          <option>Las Vegas</option>
-        </select>
+        <select id="destination" onchange="destinationChanged('main')"><option>Anywhere</option><option>Palm Springs</option><option>San Diego</option><option>Las Vegas</option><option>Los Angeles</option><option>Phoenix</option><option>Honolulu</option></select>
       </div>
 
       <div class="smartcontrol">
@@ -294,11 +311,11 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 <div class="routebox">
  <div class="routefield"><div class="routelabel">FROM</div><div class="routevalue">✈ <span>YVR</span></div><div class="routesub">Vancouver, BC</div></div>
  <div class="routearrow">→</div>
- <div class="routefield"><div class="routelabel">TO</div><div class="routevalue">⌖ <select id="destinationResults" onchange="destinationChanged('results')"><option>Anywhere</option><option>Palm Springs</option><option>San Diego</option><option>Las Vegas</option></select></div><div class="routesub" id="tosub">Explore all destinations</div></div>
+ <div class="routefield"><div class="routelabel">TO</div><div class="routevalue">⌖ <select id="destinationResults" onchange="destinationChanged('results')"><option>Anywhere</option><option>Palm Springs</option><option>San Diego</option><option>Las Vegas</option><option>Los Angeles</option><option>Phoenix</option><option>Honolulu</option></select></div><div class="routesub" id="tosub">Explore all destinations</div></div>
 </div>
 <div class="discovery" id="discovery"><b>🌎 Destination Discovery is on</b><p>You didn't choose a destination, so VoyageAI is searching for places that best fit the whole trip: budget, weather, hotel quality, location, safety & comfort, food/lifestyle and flight convenience.</p></div>
 <div class="liveflights" id="liveflights">
-  <div class="livehead"><div><h2>✈ Live flight search</h2><p>Duffel Test Mode inventory · VoyageAI compares returned offers by price, stops and total travel time.</p></div><span class="livepill">TEST DATA</span></div>
+  <div class="livehead"><div><h2>✈ Flight options</h2><p>VoyageAI is comparing test offers across destinations by total price, travel time and connections.</p></div><span class="livepill">TEST DATA</span></div>
   <div id="flightstatus" class="flightstatus">Choose a destination above, or leave <b>Anywhere</b> selected, then click <b>Find my trip</b>.</div>
   <div id="flightgrid" class="flightgrid" style="display:none"></div>
 </div>
@@ -468,7 +485,7 @@ function toggleSafety(){
   document.getElementById('badge2').textContent=safetyOn?'BEST FOR COMFORT':'BEST HOTEL';
 }
 const VOYAGE_API='https://voyageai-api.mike-b09.workers.dev/';
-const destinationCodes={'Palm Springs':'PSP','San Diego':'SAN','Las Vegas':'LAS'};
+const destinationCodes={'Palm Springs':'PSP','San Diego':'SAN','Las Vegas':'LAS','Los Angeles':'LAX','Phoenix':'PHX','Honolulu':'HNL'};
 
 function prettyDuration(v){
   if(!v) return '';
@@ -612,80 +629,78 @@ function chooseFlightOptions(data){
   });
   return {cheapest,bestNonstop,voyagePick:best||cheapest};
 }
-function flightChoiceHTML(label,offer,travellers,kind,reference){
-  if(!offer) return '';
+
+function sameOffer(a,b){
+  if(!a||!b) return false;
+  return numericPrice(a)===numericPrice(b) &&
+    (a.outbound?.departure||'')===(b.outbound?.departure||'') &&
+    (a.return?.departure||'')===(b.return?.departure||'');
+}
+function compactOption(label,offer,travellers,main){
+  if(!offer || sameOffer(offer,main)) return '';
   const total=numericPrice(offer), pp=total/travellers;
-  const out=offer.outbound||{}, ret=offer.return||{};
-  const or=routeSummary(out), rr=routeSummary(ret);
-  const journey=totalJourneyMins(offer);
-  const h=Math.floor(journey/60), m=journey%60;
-  let why='';
-  if(kind==='cheap') why='Lowest total fare among the returned offers.';
-  if(kind==='nonstop') why='Best-priced option with no connections in either direction.';
-  if(kind==='best'){
-    const diff=reference ? total-numericPrice(reference) : 0;
-    why=diff>0
-      ? `VoyageAI balances price, total travel time and connections. This costs C$${diff.toFixed(2)} more than the cheapest option, but may save time or avoid a connection.`
-      : 'VoyageAI balances price, total travel time and connections. This is also the lowest-priced option.';
-  }
-  return `<div class="choice">
-    <h4>${label}</h4>
-    <div class="choiceprice">C$${total.toFixed(2)}</div>
-    <div class="choicemeta">Total for ${travellers} traveller${travellers===1?'':'s'} · C$${pp.toFixed(2)}/person<br>${airlineName(offer)} · ${h<999?`${h}h ${m}m total journey`:''}<br>Outbound: ${or.text}<br>Return: ${rr.text}</div>
-    <div class="choicewhy">${why}</div>
+  const o=offer.outbound||{}, r=offer.return||{};
+  const or=routeSummary(o), rr=routeSummary(r);
+  return `<div class="altrow">
+    <div><b>${label}</b><span>${airlineName(offer)} · ${or.text} out · ${rr.text} back</span></div>
+    <div class="altprice">C$${total.toFixed(2)}<small>C$${pp.toFixed(2)}/person</small></div>
   </div>`;
 }
 function flightCard(destinationName,data){
   const offer=data.offers?.[0];
-  if(!offer) return `<div class="flightcard"><h3>${destinationName}</h3><div class="flightmeta">No test offers returned.</div></div>`;
+  if(!offer) return `<article class="tripoption"><div class="triptop"><h3>${destinationName}</h3><span class="testpill">TEST</span></div><p class="emptymsg">No test offers returned for this search.</p></article>`;
+
   const travellers=Number(document.getElementById('travellers').value||1);
   const picks=chooseFlightOptions(data);
   const main=picks.voyagePick||offer;
+  const cheapest=picks.cheapest;
+  const bestNonstop=picks.bestNonstop;
   const out=main.outbound||{}, ret=main.return||{};
   const outRoute=routeSummary(out), retRoute=routeSummary(ret);
   const total=numericPrice(main), pp=total/travellers;
-  const cheapest=picks.cheapest;
-  const bestNonstop=picks.bestNonstop;
-  const diff=cheapest ? total-numericPrice(cheapest) : 0;
+  const mainIsCheapest=sameOffer(main,cheapest);
+  const mainIsNonstop=outRoute.stops===0&&retRoute.stops===0;
 
-  let recommendation='';
-  if(bestNonstop && cheapest && numericPrice(bestNonstop)>numericPrice(cheapest)){
-    const premium=numericPrice(bestNonstop)-numericPrice(cheapest);
-    recommendation=`Best nonstop costs C$${premium.toFixed(2)} more total than the cheapest returned fare.`;
-  }else if(bestNonstop && cheapest && numericPrice(bestNonstop)===numericPrice(cheapest)){
-    recommendation='The cheapest returned option is also nonstop.';
-  }else if(!bestNonstop){
-    recommendation='No round-trip nonstop option was found among the returned test offers.';
+  let why='Best balance of price, total travel time and connections among the returned test offers.';
+  if(mainIsCheapest && mainIsNonstop) why='Strong result: the lowest-priced returned fare is also nonstop in both directions.';
+  else if(mainIsCheapest) why='VoyageAI picked the lowest-priced returned fare after considering travel time and connections.';
+  else if(mainIsNonstop && cheapest){
+    const premium=total-numericPrice(cheapest);
+    why=`VoyageAI prefers this nonstop itinerary even though it costs C$${premium.toFixed(2)} more total than the cheapest returned fare.`;
   }
 
-  return `<div class="flightcard" data-destination="${destinationName}">
-    <h3>${destinationName}</h3>
-    <div class="flightlabels">
-      <span class="flightlabel best">VOYAGEAI PICK</span>
-      ${outRoute.stops===0&&retRoute.stops===0?'<span class="flightlabel nonstop">NONSTOP</span>':''}
-      ${cheapest===main?'<span class="flightlabel cheap">CHEAPEST</span>':''}
+  const alternatives=[
+    compactOption('Cheapest alternative',cheapest,travellers,main),
+    compactOption('Best nonstop',bestNonstop,travellers,main)
+  ].filter(Boolean).join('');
+
+  return `<article class="tripoption">
+    <div class="triptop">
+      <div><h3>${destinationName}</h3><div class="airline">${airlineName(main)} · Round trip</div></div>
+      <span class="testpill">DUFFEL TEST</span>
     </div>
-    <div class="flightmeta">${airlineName(main)} · Round trip · ${prettyDuration(out.duration)}</div>
-    <div class="flightprice">C$${total.toFixed(2)} <small style="font-size:11px;color:var(--muted)">CAD total</small></div>
-    <div class="sourcefare">For ${travellers} traveller${travellers===1?'':'s'} · C$${pp.toFixed(2)} per person · Source fare ${main.price.source_amount} ${main.price.source_currency} · FX ${data.pricing.usd_to_cad_rate}</div>
-    <div class="${outRoute.stop||retRoute.stop?'routebadge stop':'routebadge'}">${outRoute.stop||retRoute.stop?'STOPS INCLUDED':'NONSTOP BOTH WAYS'}</div>
-    <div class="flightmeta" style="margin-top:9px"><b>Outbound · ${prettyDate(out.departure)}:</b> ${out.from} ${prettyTime(out.departure)} → ${out.to} ${prettyTime(out.arrival)} · ${outRoute.text}<br><b>Return · ${prettyDate(ret.departure)}:</b> ${ret.from||''} ${prettyTime(ret.departure)} → ${ret.to||''} ${prettyTime(ret.arrival)} · ${retRoute.text}</div>
-
-    <div class="flightrecap"><b>Why VoyageAI picked this flight</b><p>${recommendation}${diff>0?` The selected option is C$${diff.toFixed(2)} above the cheapest returned fare because VoyageAI also weighs travel time and connections.`:''}</p></div>
-
-    <div class="flightchoices">
-      ${flightChoiceHTML('Cheapest',picks.cheapest,travellers,'cheap')}
-      ${picks.bestNonstop ? flightChoiceHTML('Best nonstop',picks.bestNonstop,travellers,'nonstop') : ''}
-      ${flightChoiceHTML('VoyageAI pick',picks.voyagePick,travellers,'best',picks.cheapest)}
+    <div class="badgerow">
+      <span class="smartbadge pick">VoyageAI pick</span>
+      ${mainIsCheapest?'<span class="smartbadge cheap">Cheapest</span>':''}
+      ${mainIsNonstop?'<span class="smartbadge nonstop">Nonstop</span>':''}
     </div>
-
-    <span class="flighttag">Duffel test offers</span>
-  </div>`;
+    <div class="priceblock">
+      <div class="bigprice">C$${total.toFixed(2)}</div>
+      <div class="pricecopy">total for ${travellers} traveller${travellers===1?'':'s'}<br><b>C$${pp.toFixed(2)} per person</b></div>
+    </div>
+    <div class="itinerary">
+      <div class="leg"><span class="leglabel">OUTBOUND · ${prettyDate(out.departure)}</span><b>${out.from} ${prettyTime(out.departure)} → ${out.to} ${prettyTime(out.arrival)}</b><span>${outRoute.text} · ${prettyDuration(out.duration)}</span></div>
+      <div class="leg"><span class="leglabel">RETURN · ${prettyDate(ret.departure)}</span><b>${ret.from||''} ${prettyTime(ret.departure)} → ${ret.to||''} ${prettyTime(ret.arrival)}</b><span>${retRoute.text} · ${prettyDuration(ret.duration)}</span></div>
+    </div>
+    <div class="whybox"><b>Why this flight</b><span>${why}</span></div>
+    ${alternatives?`<div class="alternatives"><div class="altheading">Other useful options</div>${alternatives}</div>`:''}
+    <div class="farefoot">Source fare ${main.price.source_amount} ${main.price.source_currency} · FX ${data.pricing.usd_to_cad_rate}</div>
+  </article>`;
 }
 
 async function loadLiveFlights(){
   const selected=document.getElementById('destination').value;
-  const names=selected==='Anywhere'?['Palm Springs','San Diego','Las Vegas']:[selected];
+  const names=selected==='Anywhere'?['Palm Springs','San Diego','Las Vegas','Los Angeles','Phoenix','Honolulu']:[selected];
   const status=document.getElementById('flightstatus');
   const grid=document.getElementById('flightgrid');
   status.className='flightstatus';
@@ -953,8 +968,13 @@ function destinationChanged(source='main'){
  }else{
    all.forEach(c=>document.getElementById('card-'+c.replaceAll(' ','-')).style.display=c===v?'block':'none');
    bestCity=v;
-   document.getElementById('heroScore').textContent=currentScores[v]+'%';
-   document.getElementById('heroBest').textContent=v+' · Your selected destination';
+   if(currentScores[v]){
+     document.getElementById('heroScore').textContent=currentScores[v]+'%';
+     document.getElementById('heroBest').textContent=v+' · Your selected destination';
+   }else{
+     document.getElementById('heroScore').textContent='—';
+     document.getElementById('heroBest').textContent=v+' · Live flight discovery';
+   }
  }
  syncSearchControls();
 }
