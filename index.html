@@ -1,9 +1,10 @@
+
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v1.0 — Watch This Trip</title>
+<title>Project VoyageAI v1.1 — Live Flights</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -118,12 +119,15 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 
 .watchbtn{margin-top:10px;width:100%;border:1px solid #d9d0fa;background:#fff;color:var(--match);border-radius:11px;padding:10px 12px;font-weight:900;cursor:pointer}.watchbtn.active{background:#f2eeff}
 .watchpanel{display:none;border:1px solid #dcd4fa;background:linear-gradient(135deg,#fbf9ff,#f8fbff);border-radius:18px;padding:18px;margin:20px 0}.watchtop{display:flex;justify-content:space-between;gap:14px;align-items:start}.watchtop h2{margin:0;font-size:22px}.watchtop p{margin:4px 0 0;color:var(--muted);font-size:12.5px}.signal{border-radius:999px;padding:7px 10px;font-size:11px;font-weight:950;background:#e9f6ef;color:#19724e}.watchstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:15px 0}.watchstat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px}.watchstat small{display:block;color:var(--muted);font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.05em}.watchstat b{display:block;margin-top:4px;font-size:18px}.down{color:#16734f}.watchchart{height:150px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px}.watchchart svg{width:100%;height:100%}.watchmessage{margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px;font-size:12.5px;line-height:1.5;color:#536076}.watchmessage b{color:var(--ink)}.alertrow{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:11.5px;color:var(--muted)}.alertdot{width:8px;height:8px;border-radius:50%;background:#1d8a5d}@media(max-width:700px){.watchstats{grid-template-columns:1fr 1fr}.watchtop{flex-direction:column}}
+
+.liveflights{margin:18px 0;border:1px solid #dbe3f4;border-radius:18px;padding:18px;background:linear-gradient(135deg,#f8fbff,#fbf9ff)}
+.livehead{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:12px}.livehead h2{margin:0;font-size:22px}.livehead p{margin:4px 0 0;color:var(--muted);font-size:12.5px}.livepill{font-size:10px;font-weight:900;letter-spacing:.06em;padding:7px 9px;border-radius:99px;background:#fff3d9;color:#8a5b00;white-space:nowrap}.flightstatus{padding:13px;border:1px dashed #ccd5e6;border-radius:12px;color:var(--muted);font-size:13px;background:white}.flightgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.flightcard{border:1px solid var(--line);border-radius:14px;padding:14px;background:white}.flightcard h3{margin:0 0 3px;font-size:17px}.flightprice{font-size:25px;font-weight:900;margin:10px 0 4px}.flightmeta{font-size:12px;color:var(--muted);line-height:1.5}.flighttag{display:inline-block;margin-top:8px;font-size:10px;font-weight:850;background:var(--goodsoft);color:var(--good);padding:5px 7px;border-radius:99px}.liveerror{color:#9b2c2c;background:#fff5f5;border-color:#f2cccc}.sourcefare{font-size:10px;color:var(--muted);margin-top:2px}@media(max-width:840px){.flightgrid{grid-template-columns:1fr}.livehead{flex-direction:column}}
 </style>
 </head>
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.0</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.1</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -169,6 +173,11 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
  <div class="routefield"><div class="routelabel">TO</div><div class="routevalue">⌖ <select id="destination" onchange="destinationChanged()"><option>Anywhere</option><option>Palm Springs</option><option>San Diego</option><option>Las Vegas</option></select></div><div class="routesub" id="tosub">Explore all destinations</div></div>
 </div>
 <div class="discovery" id="discovery"><b>🌎 Destination Discovery is on</b><p>You didn't choose a destination, so VoyageAI is searching for places that best fit the whole trip: budget, weather, hotel quality, location, safety & comfort, food/lifestyle and flight convenience.</p></div>
+<div class="liveflights" id="liveflights">
+  <div class="livehead"><div><h2>✈ Live flight search</h2><p>Duffel Test Mode inventory · prices converted to CAD using the live FX rate returned by the VoyageAI API.</p></div><span class="livepill">TEST DATA</span></div>
+  <div id="flightstatus" class="flightstatus">Choose a destination above, or leave <b>Anywhere</b> selected, then click <b>Find my trip</b>.</div>
+  <div id="flightgrid" class="flightgrid" style="display:none"></div>
+</div>
 <div id="safetystrip" class="safetystrip" style="display:none">
     <div class="shield">🛡️</div>
     <div><b>Safety & Comfort weighting is on</b><p>VoyageAI is giving extra weight to active hotel surroundings, 24-hour front desk, straightforward rideshare/taxi access, transit convenience and the practicality of returning to the hotel later in the evening.</p></div>
@@ -317,7 +326,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
 
-  <div class="note"><b>Prototype — sample travel data.</b> Prices, reviews and scores are illustrative. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
+  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. The flight panel now calls the VoyageAI Cloudflare API and displays Duffel Test Mode offers; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
 </section>
 </div>
 
@@ -334,10 +343,68 @@ function toggleSafety(){
   document.getElementById('badge1').textContent=safetyOn?'BEST BALANCE':'BEST OVERALL';
   document.getElementById('badge2').textContent=safetyOn?'BEST FOR COMFORT':'BEST HOTEL';
 }
+const VOYAGE_API='https://voyageai-api.mike-b09.workers.dev/';
+const destinationCodes={'Palm Springs':'PSP','San Diego':'SAN','Las Vegas':'LAS'};
+
+function prettyDuration(v){
+  if(!v) return '';
+  const m=v.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+  if(!m) return v;
+  return [m[1]?m[1]+'h':'',m[2]?m[2]+'m':''].filter(Boolean).join(' ');
+}
+function prettyTime(v){
+  if(!v) return '';
+  const d=new Date(v);
+  return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+}
+async function fetchFlight(destinationName){
+  const code=destinationCodes[destinationName];
+  const q=new URLSearchParams({origin:'YVR',destination:code,departure:'2026-10-12',return:'2026-10-17',travellers:'2'});
+  const r=await fetch(VOYAGE_API+'?'+q.toString());
+  const data=await r.json();
+  if(!r.ok || !data.success) throw new Error(data?.error?.message || data?.error || 'Flight search failed');
+  return {destinationName,data};
+}
+function flightCard(destinationName,data){
+  const offer=data.offers?.[0];
+  if(!offer) return `<div class="flightcard"><h3>${destinationName}</h3><div class="flightmeta">No test offers returned.</div></div>`;
+  const out=offer.outbound||{};
+  const ret=offer.return||{};
+  const stops=out.stops===0?'Nonstop':`${out.stops} stop${out.stops===1?'':'s'}`;
+  return `<div class="flightcard">
+    <h3>${destinationName}</h3>
+    <div class="flightmeta">${offer.airline} · ${stops} · ${prettyDuration(out.duration)}</div>
+    <div class="flightprice">${offer.price.display} <small style="font-size:11px;color:var(--muted)">CAD</small></div>
+    <div class="sourcefare">Source fare ${offer.price.source_amount} ${offer.price.source_currency} · FX ${data.pricing.usd_to_cad_rate}</div>
+    <div class="flightmeta" style="margin-top:9px"><b>Outbound:</b> ${out.from} ${prettyTime(out.departure)} → ${out.to} ${prettyTime(out.arrival)}<br><b>Return:</b> ${ret.from||''} ${prettyTime(ret.departure)} → ${ret.to||''} ${prettyTime(ret.arrival)}</div>
+    <span class="flighttag">Duffel test offer</span>
+  </div>`;
+}
+async function loadLiveFlights(){
+  const selected=document.getElementById('destination').value;
+  const names=selected==='Anywhere'?['Palm Springs','San Diego','Las Vegas']:[selected];
+  const status=document.getElementById('flightstatus');
+  const grid=document.getElementById('flightgrid');
+  status.className='flightstatus';
+  status.style.display='block';
+  status.innerHTML='Searching Duffel test inventory…';
+  grid.style.display='none';
+  grid.innerHTML='';
+  try{
+    const results=await Promise.all(names.map(fetchFlight));
+    grid.innerHTML=results.map(x=>flightCard(x.destinationName,x.data)).join('');
+    grid.style.display='grid';
+    status.style.display='none';
+  }catch(err){
+    status.className='flightstatus liveerror';
+    status.textContent='Live flight search could not load: '+err.message;
+  }
+}
 function searchTrips(){
   document.getElementById('results').style.display='block';
   document.querySelector('.flow').innerHTML='<span>ASK</span><i></i><b>MATCH</b><i></i><span>WATCH</span>';
   document.getElementById('results').scrollIntoView({behavior:'smooth'});
+  loadLiveFlights();
 }
 function editSearch(){window.scrollTo({top:0,behavior:'smooth'});document.getElementById('prompt').focus()}
 function watch(n,p){
