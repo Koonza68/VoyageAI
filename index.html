@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v1.3 — Smart Trip Request</title>
+<title>Project VoyageAI v1.4 — Integrated Trip Controls</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -143,12 +143,33 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 .altbtn{border:1px solid #d9dfeb;background:#fff;border-radius:10px;padding:6px 8px;font-size:10px;font-weight:800;cursor:pointer;margin-top:5px}
 .altbtn:hover{background:#f6f8fc}
 
+
+.understood{max-width:860px;margin:14px auto 0;border:1px solid #dfe6f3;background:#fbfcff;border-radius:16px;padding:14px;text-align:left}
+.understood-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.understood-title{font-size:13px;font-weight:950;color:var(--ink)}
+.understood-sub{font-size:10px;color:#7b8494;margin-top:2px}
+.understood-note{font-size:9px;font-weight:850;color:#667085;background:#fff;border:1px solid #e4e8f0;border-radius:999px;padding:5px 8px;white-space:nowrap}
+.understood-grid{display:grid;grid-template-columns:1.15fr 1.2fr 1fr 1fr .8fr .9fr;gap:8px}
+.smartcontrol{border:1px solid #e0e5ee;background:#fff;border-radius:12px;padding:8px 9px;min-width:0}
+.smartcontrol label{display:block;font-size:8px;font-weight:900;letter-spacing:.075em;text-transform:uppercase;color:#8993a5;margin-bottom:4px}
+.smartcontrol select,.smartcontrol input{width:100%;border:0;outline:0;background:transparent;color:var(--ink);font-size:12px;font-weight:800;min-width:0;padding:0}
+.smart-static{font-size:12px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.moneyinput{display:flex;align-items:center;gap:2px;font-size:12px;font-weight:850}
+.moneyinput input{min-width:0}
+.stepper{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.stepper button{width:26px;height:26px;border-radius:8px;border:1px solid #dfe5ee;background:#f8faff;color:var(--ink);font-size:16px;line-height:1;cursor:pointer;font-weight:900}
+.stepper span{font-size:13px;font-weight:900;min-width:18px;text-align:center}
+.preference-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.interpretchip{font-size:9px;border:1px solid #e1e6ef;background:#fff;border-radius:999px;padding:5px 7px;color:#586277}
+@media(max-width:900px){.understood-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:620px){.understood-grid{grid-template-columns:1fr 1fr}.understood-head{align-items:center}.understood-note{display:none}}
+
 </style>
 </head>
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.3</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.4</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -164,49 +185,68 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
 
-  <div class="searchcontrols">
-    <div class="searchfield">
-      <label>From</label>
-      <div class="fixedvalue">✈ YVR · Vancouver</div>
-      <input type="hidden" id="origin" value="YVR">
+  
+  <div class="understood" id="interpretBox">
+    <div class="understood-head">
+      <div>
+        <div class="understood-title">✨ VoyageAI understood</div>
+        <div class="understood-sub">Adjust anything here before searching.</div>
+      </div>
+      <div class="understood-note" id="understoodStatus">Ready to search</div>
     </div>
-    <div class="searchfield tofield">
-      <label>To</label>
-      <select id="destination" onchange="destinationChanged('main')">
-        <option>Anywhere</option>
-        <option>Palm Springs</option>
-        <option>San Diego</option>
-        <option>Las Vegas</option>
-      </select>
+
+    <input type="hidden" id="origin" value="YVR">
+
+    <div class="understood-grid">
+      <div class="smartcontrol">
+        <label>From</label>
+        <div class="smart-static">✈ YVR · Vancouver</div>
+      </div>
+
+      <div class="smartcontrol">
+        <label>To</label>
+        <select id="destination" onchange="destinationChanged('main')">
+          <option>Anywhere</option>
+          <option>Palm Springs</option>
+          <option>San Diego</option>
+          <option>Las Vegas</option>
+        </select>
+      </div>
+
+      <div class="smartcontrol">
+        <label>Departure</label>
+        <input id="departure" type="date" onchange="syncSearchControls()">
+      </div>
+
+      <div class="smartcontrol">
+        <label>Return</label>
+        <input id="returnDate" type="date" onchange="syncSearchControls()">
+      </div>
+
+      <div class="smartcontrol traveller-control">
+        <label>Travellers</label>
+        <div class="stepper">
+          <button type="button" onclick="changeTravellers(-1)" aria-label="Decrease travellers">−</button>
+          <span id="travellerCount">2</span>
+          <button type="button" onclick="changeTravellers(1)" aria-label="Increase travellers">+</button>
+        </div>
+        <select id="travellers" onchange="syncSearchControls()" style="display:none">
+          <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        </select>
+      </div>
+
+      <div class="smartcontrol">
+        <label>Budget CAD</label>
+        <div class="moneyinput"><span>C$</span><input id="budget" type="number" min="250" step="50" value="2000" onchange="syncSearchControls()"></div>
+      </div>
     </div>
-    <div class="searchfield">
-      <label>Departure</label>
-      <input id="departure" type="date" onchange="syncSearchControls()">
+
+    <div class="preference-row" id="interpretGrid">
+      <span class="interpretchip">Warm weather</span>
+      <span class="interpretchip">Vegan-friendly</span>
+      <span class="interpretchip">High hotel quality</span>
     </div>
-    <div class="searchfield">
-      <label>Return</label>
-      <input id="returnDate" type="date" onchange="syncSearchControls()">
-    </div>
-    <div class="searchfield">
-      <label>Travellers</label>
-      <select id="travellers" onchange="syncSearchControls()">
-        <option value="1">1</option>
-        <option value="2" selected>2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-      </select>
-    </div>
-    <div class="searchfield">
-      <label>Budget CAD</label>
-      <input id="budget" type="number" min="250" step="50" value="2000" onchange="syncSearchControls()">
-    </div>
-  </div>
-  <div class="searchhelper">VoyageAI can now interpret the trip request and use it to fill these search controls.</div>
-  <div class="interpretbox" id="interpretBox">
-    <div class="interprettitle">VoyageAI understood:</div>
-    <div class="interpretgrid" id="interpretGrid"></div>
   </div>
 
   <div class="prefbox">
@@ -392,7 +432,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
 
-  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. The flight panel now calls the VoyageAI Cloudflare API using the interpreted or selected departure date, return date, traveller count and destination, and displays Duffel Test Mode offers with total-party pricing, per-person pricing, stop details and nonstop alternatives when available; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
+  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. VoyageAI now places the interpreted trip details directly into one editable control area. Dates, destination, traveller count and budget can be adjusted there before the Cloudflare API searches Duffel Test Mode offers; flight results include total-party pricing, per-person pricing, stop details, dates and nonstop alternatives when available; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
 </section>
 </div>
 
@@ -457,7 +497,15 @@ function syncSearchControls(source){
   if(el('travellersChip')) el('travellersChip').textContent=tc+' traveller'+(tc===1?'':'s');
   if(el('originChip')) el('originChip').textContent='From '+fresh.origin;
   if(el('budgetChip')) el('budgetChip').textContent='Under $'+fmt+' CAD';
+  if(el('travellerCount')) el('travellerCount').textContent=tc;
+  if(el('understoodStatus')) el('understoodStatus').textContent=`${days} days · ${tc} traveller${tc===1?'':'s'} · C$${fmt}`;
   if(el('matchProfile')) el('matchProfile').textContent=`For this search, VoyageAI is using ${fresh.origin} → ${fresh.destination}, ${days} day${days===1?'':'s'}, ${tc} traveller${tc===1?'':'s'}, and a $${fmt} CAD budget. The VoyageAI Score still uses the illustrative destination factors below while the live flight panel uses your actual search controls.`;
+}
+function changeTravellers(delta){
+  const sel=document.getElementById('travellers');
+  const next=Math.max(1,Math.min(6,Number(sel.value||2)+delta));
+  sel.value=String(next);
+  syncSearchControls();
 }
 async function fetchFlight(destinationName){
   const p=getSearchParams();
@@ -636,17 +684,16 @@ function parseTripRequest(){
   syncSearchControls();
 
   const chips=[];
-  chips.push(`From ${origin}`);
-  chips.push(`To ${destination}`);
-  chips.push(`${duration||5} days`);
-  chips.push(`${travellers||document.getElementById('travellers').value} travellers`);
-  if(budget) chips.push(`Budget C$${new Intl.NumberFormat('en-CA').format(budget)}`);
   if(/warm/.test(t)) chips.push('Warm weather');
   if(/vegan/.test(t)) chips.push('Vegan-friendly');
   if(/great hotel|excellent hotel|nice hotel|quality hotel/.test(t)) chips.push('High hotel quality');
   if(/nonstop|non-stop|direct flight/.test(t)) chips.push('Nonstop preferred');
-  const box=document.getElementById('interpretBox'), grid=document.getElementById('interpretGrid');
-  if(box&&grid){grid.innerHTML=chips.map(x=>`<span class="interpretchip">${x}</span>`).join('');box.style.display='block';}
+  const grid=document.getElementById('interpretGrid');
+  if(grid){
+    grid.innerHTML=chips.length
+      ? chips.map(x=>`<span class="interpretchip">${x}</span>`).join('')
+      : '<span class="interpretchip">All major trip factors considered</span>';
+  }
 }
 
 function searchTrips(){
