@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v1.4 — Integrated Trip Controls</title>
+<title>Project VoyageAI v1.4.1 — Clean Integrated Controls</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -164,12 +164,14 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 @media(max-width:900px){.understood-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:620px){.understood-grid{grid-template-columns:1fr 1fr}.understood-head{align-items:center}.understood-note{display:none}}
 
+
+.request-action-only{justify-content:flex-end}
 </style>
 </head>
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.4</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.4.1</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -178,9 +180,8 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
   <p>VoyageAI learns what matters to you, searches the options and shows the trips that fit you best — then keeps watching the prices.</p>
 
   <div class="ask">
-    <textarea id="tripRequest" id="prompt">I want to get away next month for 5 days. Two people leaving Vancouver, somewhere warm. My budget is $2,000 and I want a great hotel with vegan restaurants nearby.</textarea>
-    <div class="askbar">
-      <div class="chips"><span class="chip">✈ Vancouver</span><span class="chip">💰 CAD</span><span class="chip">🌱 Vegan friendly</span></div>
+    <textarea id="tripRequest">I want to get away next month for 5 days. Two people leaving Vancouver, somewhere warm. My budget is $2,000 and I want a great hotel with vegan restaurants nearby.</textarea>
+    <div class="askbar request-action-only">
       <button class="primary" onclick="searchTrips()">Find my trip →</button>
     </div>
   </div>
@@ -432,7 +433,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
 
-  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. VoyageAI now places the interpreted trip details directly into one editable control area. Dates, destination, traveller count and budget can be adjusted there before the Cloudflare API searches Duffel Test Mode offers; flight results include total-party pricing, per-person pricing, stop details, dates and nonstop alternatives when available; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
+  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. VoyageAI now places the interpreted trip details directly into one editable control area. Manual changes to travellers, dates, destination and budget persist unless you change the trip request itself. Dates, destination, traveller count and budget can be adjusted there before the Cloudflare API searches Duffel Test Mode offers; flight results include total-party pricing, per-person pricing, stop details, dates and nonstop alternatives when available; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
 </section>
 </div>
 
@@ -634,6 +635,8 @@ function validateSearch(){
   return '';
 }
 
+let lastParsedTripRequest='';
+
 function monthNameToIndex(name){
   const months=['january','february','march','april','may','june','july','august','september','october','november','december'];
   return months.indexOf(name.toLowerCase());
@@ -694,10 +697,12 @@ function parseTripRequest(){
       ? chips.map(x=>`<span class="interpretchip">${x}</span>`).join('')
       : '<span class="interpretchip">All major trip factors considered</span>';
   }
+  lastParsedTripRequest=raw;
 }
 
 function searchTrips(){
-  parseTripRequest();
+  const currentRequest=(document.getElementById('tripRequest')?.value||'').trim();
+  if(currentRequest!==lastParsedTripRequest) parseTripRequest();
   const error=validateSearch();
   if(error){alert(error);return;}
   syncSearchControls();
@@ -706,7 +711,7 @@ function searchTrips(){
   document.getElementById('results').scrollIntoView({behavior:'smooth'});
   loadLiveFlights();
 }
-function editSearch(){window.scrollTo({top:0,behavior:'smooth'});document.getElementById('prompt').focus()}
+function editSearch(){window.scrollTo({top:0,behavior:'smooth'});document.getElementById('tripRequest').focus()}
 function watch(n,p){
   document.getElementById('watchname').textContent=n;
   document.getElementById('startprice').textContent=p;
