@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v1.4.1 — Clean Integrated Controls</title>
+<title>Project VoyageAI v1.5 — Flight Intelligence</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -166,12 +166,29 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 
 
 .request-action-only{justify-content:flex-end}
+
+.flightrecap{margin-top:10px;padding:10px 11px;border:1px solid #e4e8f0;border-radius:12px;background:#fbfcff}
+.flightrecap b{font-size:10px}
+.flightrecap p{margin:4px 0 0;font-size:10px;color:#667085;line-height:1.45}
+.flightlabels{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0}
+.flightlabel{font-size:8px;font-weight:900;border-radius:999px;padding:5px 7px;background:#eef2ff;color:#3547a8}
+.flightlabel.best{background:#eef8f1;color:#147a42}
+.flightlabel.cheap{background:#fff5e7;color:#9a5a00}
+.flightlabel.nonstop{background:#edf7ff;color:#12608f}
+.flightchoices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.choice{border:1px solid #e3e7ee;border-radius:12px;padding:9px;background:#fff;min-width:0}
+.choice h4{font-size:10px;margin:0 0 4px}
+.choiceprice{font-size:17px;font-weight:950}
+.choicemeta{font-size:9px;color:#667085;line-height:1.45;margin-top:4px}
+.choicewhy{font-size:9px;color:#4d5667;line-height:1.4;margin-top:6px}
+@media(max-width:760px){.flightchoices{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.4.1</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.5</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -281,7 +298,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 </div>
 <div class="discovery" id="discovery"><b>🌎 Destination Discovery is on</b><p>You didn't choose a destination, so VoyageAI is searching for places that best fit the whole trip: budget, weather, hotel quality, location, safety & comfort, food/lifestyle and flight convenience.</p></div>
 <div class="liveflights" id="liveflights">
-  <div class="livehead"><div><h2>✈ Live flight search</h2><p>Duffel Test Mode inventory · prices converted to CAD using the live FX rate returned by the VoyageAI API.</p></div><span class="livepill">TEST DATA</span></div>
+  <div class="livehead"><div><h2>✈ Live flight search</h2><p>Duffel Test Mode inventory · VoyageAI compares returned offers by price, stops and total travel time.</p></div><span class="livepill">TEST DATA</span></div>
   <div id="flightstatus" class="flightstatus">Choose a destination above, or leave <b>Anywhere</b> selected, then click <b>Find my trip</b>.</div>
   <div id="flightgrid" class="flightgrid" style="display:none"></div>
 </div>
@@ -433,7 +450,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
 
-  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. VoyageAI now places the interpreted trip details directly into one editable control area. Manual changes to travellers, dates, destination and budget persist unless you change the trip request itself. Dates, destination, traveller count and budget can be adjusted there before the Cloudflare API searches Duffel Test Mode offers; flight results include total-party pricing, per-person pricing, stop details, dates and nonstop alternatives when available; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
+  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. VoyageAI now places the interpreted trip details directly into one editable control area. Manual changes to travellers, dates, destination and budget persist unless you change the trip request itself. Dates, destination, traveller count and budget can be adjusted there before the Cloudflare API searches Duffel Test Mode offers; flight results now compare returned offers and identify the cheapest fare, best nonstop and VoyageAI pick using price, stops and total travel time; results include total-party pricing, per-person pricing, stop details and dates; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
 </section>
 </div>
 
@@ -529,19 +546,16 @@ function prettyDate(value){
   if(Number.isNaN(d.getTime())) return '';
   return d.toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'});
 }
+
 function routeSummary(leg){
-  if(!leg) return {text:'Route details unavailable', badge:'', stop:false};
+  if(!leg) return {text:'Route details unavailable', stop:false, stops:0};
   const stops=Number(leg.stops||0);
-  if(stops===0){
-    return {text:'Nonstop', badge:'NONSTOP', stop:false};
-  }
   const segs=leg.segments||[];
+  if(stops===0) return {text:'Nonstop', stop:false, stops:0};
   const stopNames=[];
-  if(segs.length>1){
-    for(let i=0;i<segs.length-1;i++){
-      const code=segs[i].to;
-      if(code && !stopNames.includes(code)) stopNames.push(code);
-    }
+  for(let i=0;i<segs.length-1;i++){
+    const code=segs[i].to;
+    if(code && !stopNames.includes(code)) stopNames.push(code);
   }
   let layoverText='';
   if(segs.length>1 && segs[0].arrival && segs[1].departure){
@@ -551,61 +565,124 @@ function routeSummary(leg){
     layoverText=` · ${h?`${h}h `:''}${m}m layover`;
   }
   const via=stopNames.length?` via ${stopNames.join(', ')}`:'';
-  return {text:`${stops} stop${stops===1?'':'s'}${via}${layoverText}`, badge:`${stops} STOP${stops===1?'':'S'}`, stop:true};
+  return {text:`${stops} stop${stops===1?'':'s'}${via}${layoverText}`, stop:true, stops};
 }
-function findBestNonstop(data){
-  const offers=(data.offers||[]).filter(o=>(o.outbound?.stops||0)===0 && (o.return?.stops||0)===0);
-  if(!offers.length) return null;
-  return offers.sort((a,b)=>Number(a.price?.display_numeric||a.price?.display||999999)-Number(b.price?.display_numeric||b.price?.display||999999))[0];
+function parseDurationMins(v){
+  if(!v) return 99999;
+  if(typeof v==='number') return v;
+  const h=Number((String(v).match(/(\d+)H/i)||[])[1]||0);
+  const m=Number((String(v).match(/(\d+)M/i)||[])[1]||0);
+  if(h||m) return h*60+m;
+  const hm=String(v).match(/(\d+)\s*h(?:\s*(\d+)\s*m)?/i);
+  return hm ? Number(hm[1])*60+Number(hm[2]||0) : 99999;
+}
+function numericPrice(o){
+  return Number(String(o?.price?.display||'').replace(/[^0-9.]/g,'')) || 999999;
+}
+function totalJourneyMins(o){
+  return parseDurationMins(o?.outbound?.duration)+parseDurationMins(o?.return?.duration);
+}
+function totalStops(o){
+  return Number(o?.outbound?.stops||0)+Number(o?.return?.stops||0);
+}
+function airlineName(o){ return o?.airline || 'Airline'; }
+
+function chooseFlightOptions(data){
+  const offers=(data.offers||[]).slice();
+  if(!offers.length) return {};
+  offers.sort((a,b)=>numericPrice(a)-numericPrice(b));
+  const cheapest=offers[0];
+
+  const nonstopOffers=offers.filter(o=>(o.outbound?.stops||0)===0 && (o.return?.stops||0)===0)
+                           .sort((a,b)=>numericPrice(a)-numericPrice(b));
+  const bestNonstop=nonstopOffers[0]||null;
+
+  const prices=offers.map(numericPrice), mins=offers.map(totalJourneyMins).filter(x=>x<99999);
+  const minP=Math.min(...prices), maxP=Math.max(...prices);
+  const minT=mins.length?Math.min(...mins):0, maxT=mins.length?Math.max(...mins):1;
+  let best=null, bestScore=Infinity;
+  offers.forEach(o=>{
+    const p=numericPrice(o);
+    const t=totalJourneyMins(o);
+    const s=totalStops(o);
+    const priceNorm=maxP>minP?(p-minP)/(maxP-minP):0;
+    const timeNorm=(t<99999 && maxT>minT)?(t-minT)/(maxT-minT):0.5;
+    const score=priceNorm*0.48 + timeNorm*0.30 + Math.min(2,s)*0.18;
+    if(score<bestScore){best=o;bestScore=score;}
+  });
+  return {cheapest,bestNonstop,voyagePick:best||cheapest};
+}
+function flightChoiceHTML(label,offer,travellers,kind,reference){
+  if(!offer) return '';
+  const total=numericPrice(offer), pp=total/travellers;
+  const out=offer.outbound||{}, ret=offer.return||{};
+  const or=routeSummary(out), rr=routeSummary(ret);
+  const journey=totalJourneyMins(offer);
+  const h=Math.floor(journey/60), m=journey%60;
+  let why='';
+  if(kind==='cheap') why='Lowest total fare among the returned offers.';
+  if(kind==='nonstop') why='Best-priced option with no connections in either direction.';
+  if(kind==='best'){
+    const diff=reference ? total-numericPrice(reference) : 0;
+    why=diff>0
+      ? `VoyageAI balances price, total travel time and connections. This costs C$${diff.toFixed(2)} more than the cheapest option, but may save time or avoid a connection.`
+      : 'VoyageAI balances price, total travel time and connections. This is also the lowest-priced option.';
+  }
+  return `<div class="choice">
+    <h4>${label}</h4>
+    <div class="choiceprice">C$${total.toFixed(2)}</div>
+    <div class="choicemeta">Total for ${travellers} traveller${travellers===1?'':'s'} · C$${pp.toFixed(2)}/person<br>${airlineName(offer)} · ${h<999?`${h}h ${m}m total journey`:''}<br>Outbound: ${or.text}<br>Return: ${rr.text}</div>
+    <div class="choicewhy">${why}</div>
+  </div>`;
 }
 function flightCard(destinationName,data){
   const offer=data.offers?.[0];
   if(!offer) return `<div class="flightcard"><h3>${destinationName}</h3><div class="flightmeta">No test offers returned.</div></div>`;
-  const out=offer.outbound||{};
-  const ret=offer.return||{};
   const travellers=Number(document.getElementById('travellers').value||1);
-  const totalNum=Number(String(offer.price.display).replace(/[^0-9.]/g,''))||0;
-  const perPerson=travellers?totalNum/travellers:totalNum;
-  const outRoute=routeSummary(out);
-  const retRoute=routeSummary(ret);
-  const bothNonstop=!outRoute.stop && !retRoute.stop;
-  const nonstop=findBestNonstop(data);
-  let alt='';
-  if(!bothNonstop && nonstop){
-    const nonstopTotal=Number(String(nonstop.price.display).replace(/[^0-9.]/g,''))||0;
-    const diff=nonstopTotal-totalNum;
-    alt=`<div class="altbox"><b>Nonstop option available</b><br>${nonstop.price.display} CAD total for ${travellers} traveller${travellers===1?'':'s'}${diff>0?` · +C$${diff.toFixed(2)} total`:diff<0?` · C$${Math.abs(diff).toFixed(2)} less`:' · same price'}<br><button class="altbtn" onclick="showNonstop('${destinationName}')">View nonstop option →</button></div>`;
-  }else if(!bothNonstop){
-    alt=`<div class="altbox"><b>No nonstop option found in the returned test offers.</b></div>`;
+  const picks=chooseFlightOptions(data);
+  const main=picks.voyagePick||offer;
+  const out=main.outbound||{}, ret=main.return||{};
+  const outRoute=routeSummary(out), retRoute=routeSummary(ret);
+  const total=numericPrice(main), pp=total/travellers;
+  const cheapest=picks.cheapest;
+  const bestNonstop=picks.bestNonstop;
+  const diff=cheapest ? total-numericPrice(cheapest) : 0;
+
+  let recommendation='';
+  if(bestNonstop && cheapest && numericPrice(bestNonstop)>numericPrice(cheapest)){
+    const premium=numericPrice(bestNonstop)-numericPrice(cheapest);
+    recommendation=`Best nonstop costs C$${premium.toFixed(2)} more total than the cheapest returned fare.`;
+  }else if(bestNonstop && cheapest && numericPrice(bestNonstop)===numericPrice(cheapest)){
+    recommendation='The cheapest returned option is also nonstop.';
+  }else if(!bestNonstop){
+    recommendation='No round-trip nonstop option was found among the returned test offers.';
   }
+
   return `<div class="flightcard" data-destination="${destinationName}">
     <h3>${destinationName}</h3>
-    <div class="flightmeta">${offer.airline} · Round trip · ${prettyDuration(out.duration)}</div>
-    <div class="flightprice">${offer.price.display} <small style="font-size:11px;color:var(--muted)">CAD total</small></div>
-    <div class="sourcefare">For ${travellers} traveller${travellers===1?'':'s'} · C$${perPerson.toFixed(2)} per person · Source fare ${offer.price.source_amount} ${offer.price.source_currency} · FX ${data.pricing.usd_to_cad_rate}</div>
-    <div class="${bothNonstop?'routebadge':'routebadge stop'}">${bothNonstop?'NONSTOP BOTH WAYS':'STOPS INCLUDED'}</div>
+    <div class="flightlabels">
+      <span class="flightlabel best">VOYAGEAI PICK</span>
+      ${outRoute.stops===0&&retRoute.stops===0?'<span class="flightlabel nonstop">NONSTOP</span>':''}
+      ${cheapest===main?'<span class="flightlabel cheap">CHEAPEST</span>':''}
+    </div>
+    <div class="flightmeta">${airlineName(main)} · Round trip · ${prettyDuration(out.duration)}</div>
+    <div class="flightprice">C$${total.toFixed(2)} <small style="font-size:11px;color:var(--muted)">CAD total</small></div>
+    <div class="sourcefare">For ${travellers} traveller${travellers===1?'':'s'} · C$${pp.toFixed(2)} per person · Source fare ${main.price.source_amount} ${main.price.source_currency} · FX ${data.pricing.usd_to_cad_rate}</div>
+    <div class="${outRoute.stop||retRoute.stop?'routebadge stop':'routebadge'}">${outRoute.stop||retRoute.stop?'STOPS INCLUDED':'NONSTOP BOTH WAYS'}</div>
     <div class="flightmeta" style="margin-top:9px"><b>Outbound · ${prettyDate(out.departure)}:</b> ${out.from} ${prettyTime(out.departure)} → ${out.to} ${prettyTime(out.arrival)} · ${outRoute.text}<br><b>Return · ${prettyDate(ret.departure)}:</b> ${ret.from||''} ${prettyTime(ret.departure)} → ${ret.to||''} ${prettyTime(ret.arrival)} · ${retRoute.text}</div>
-    <span class="flighttag">Duffel test offer</span>
-    ${alt}
+
+    <div class="flightrecap"><b>Why VoyageAI picked this flight</b><p>${recommendation}${diff>0?` The selected option is C$${diff.toFixed(2)} above the cheapest returned fare because VoyageAI also weighs travel time and connections.`:''}</p></div>
+
+    <div class="flightchoices">
+      ${flightChoiceHTML('Cheapest',picks.cheapest,travellers,'cheap')}
+      ${picks.bestNonstop ? flightChoiceHTML('Best nonstop',picks.bestNonstop,travellers,'nonstop') : ''}
+      ${flightChoiceHTML('VoyageAI pick',picks.voyagePick,travellers,'best',picks.cheapest)}
+    </div>
+
+    <span class="flighttag">Duffel test offers</span>
   </div>`;
 }
-function showNonstop(destinationName){
-  const item=window.__liveFlightResults?.find(x=>x.destinationName===destinationName);
-  if(!item) return;
-  const offer=findBestNonstop(item.data);
-  if(!offer){alert('No nonstop option found.');return;}
-  const travellers=Number(document.getElementById('travellers').value||1);
-  const totalNum=Number(String(offer.price.display).replace(/[^0-9.]/g,''))||0;
-  const pp=travellers?totalNum/travellers:totalNum;
-  const o=offer.outbound||{}, r=offer.return||{};
-  alert(`${destinationName} nonstop option
 
-${offer.price.display} CAD total for ${travellers} traveller${travellers===1?'':'s'}
-C$${pp.toFixed(2)} per person
-
-Outbound: ${o.from} ${prettyTime(o.departure)} → ${o.to} ${prettyTime(o.arrival)}
-Return: ${r.from||''} ${prettyTime(r.departure)} → ${r.to||''} ${prettyTime(r.arrival)}`);
-}
 async function loadLiveFlights(){
   const selected=document.getElementById('destination').value;
   const names=selected==='Anywhere'?['Palm Springs','San Diego','Las Vegas']:[selected];
