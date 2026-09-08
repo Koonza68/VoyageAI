@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v1.6 — Expanded Destination Discovery</title>
+<title>Project VoyageAI v1.7 — Ranked Trip Recommendations</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -184,7 +184,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 @media(max-width:760px){.flightchoices{grid-template-columns:1fr}}
 
 
-#flightgrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+#flightgrid{display:block!important}
 .tripoption{border:1px solid #e1e6ee;border-radius:16px;padding:15px;background:#fff;min-width:0}
 .triptop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .triptop h3{margin:0;font-size:17px}
@@ -205,12 +205,50 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 .farefoot{font-size:7px;color:#98a0ae;margin-top:9px}.emptymsg{font-size:10px;color:#667085}
 @media(max-width:820px){#flightgrid{grid-template-columns:1fr!important}}
 
+
+.recommendation-shell{margin-top:14px}
+.winner-card{border:1px solid #dcd7ff;background:linear-gradient(135deg,#faf8ff,#f5f8ff);border-radius:18px;padding:16px;margin-bottom:14px}
+.winner-kicker{font-size:9px;font-weight:950;letter-spacing:.07em;text-transform:uppercase;color:#6247d6}
+.winner-main{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-top:5px}
+.winner-main h3{font-size:23px;margin:0 0 4px}
+.winner-main p{font-size:10px;color:#667085;line-height:1.5;margin:0;max-width:650px}
+.winner-score{text-align:right;white-space:nowrap}
+.winner-score strong{display:block;font-size:34px;line-height:1;color:#6746d9}
+.winner-score span{font-size:8px;font-weight:900;color:#667085}
+.score-note{font-size:8px;color:#8a93a3;margin-top:8px}
+.ranktable-wrap{overflow-x:auto;border:1px solid #e1e6ee;border-radius:16px;background:#fff}
+.ranktable{width:100%;border-collapse:collapse;min-width:900px}
+.ranktable th{font-size:8px;text-transform:uppercase;letter-spacing:.05em;color:#7b8494;text-align:left;padding:10px 9px;background:#f8faff;border-bottom:1px solid #e7ebf1}
+.ranktable td{font-size:10px;padding:11px 9px;border-bottom:1px solid #eef1f5;vertical-align:middle}
+.ranktable tr:last-child td{border-bottom:0}
+.ranktable tbody tr{cursor:pointer}
+.ranktable tbody tr:hover{background:#fafbff}
+.ranknum{font-size:11px;font-weight:950;color:#8a93a3}
+.destname{font-weight:950;font-size:11px}
+.destsub{display:block;font-size:8px;color:#8a93a3;margin-top:2px}
+.scorecircle{display:inline-flex;width:38px;height:38px;border-radius:50%;align-items:center;justify-content:center;font-weight:950;font-size:13px;background:#f0ecff;color:#6544d7}
+.factor{font-weight:850}
+.factor.high{color:#147a42}.factor.mid{color:#8a6500}.factor.low{color:#b33b32}
+.verdict{font-weight:850;font-size:9px}
+.verdict small{display:block;color:#8a93a3;font-weight:500;margin-top:2px}
+.expandrow{display:none;background:#fbfcff}
+.expandrow.open{display:table-row}
+.expandcontent{padding:12px 14px!important}
+.detailgrid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+.detailbox{border:1px solid #e5e9f0;background:#fff;border-radius:12px;padding:11px}
+.detailbox h4{font-size:10px;margin:0 0 6px}
+.detailbox p{font-size:9px;color:#667085;line-height:1.5;margin:0}
+.liveprice{font-size:18px;font-weight:950}
+.liveprice small{font-size:8px;color:#667085;font-weight:600}
+.illustrative-flag{font-size:8px;font-weight:850;color:#8b5a00;background:#fff4d8;border-radius:999px;padding:4px 6px;display:inline-block;margin-left:5px}
+@media(max-width:700px){.winner-main{display:block}.winner-score{text-align:left;margin-top:12px}.detailgrid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.6</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.7</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -315,7 +353,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 </div>
 <div class="discovery" id="discovery"><b>🌎 Destination Discovery is on</b><p>You didn't choose a destination, so VoyageAI is searching for places that best fit the whole trip: budget, weather, hotel quality, location, safety & comfort, food/lifestyle and flight convenience.</p></div>
 <div class="liveflights" id="liveflights">
-  <div class="livehead"><div><h2>✈ Flight options</h2><p>VoyageAI is comparing test offers across destinations by total price, travel time and connections.</p></div><span class="livepill">TEST DATA</span></div>
+  <div class="livehead"><div><h2>✦ VoyageAI trip ranking</h2><p>Every destination is rated across the whole trip. Click any row to see the flight and why it scored that way.</p></div><span class="livepill">TEST DATA</span></div>
   <div id="flightstatus" class="flightstatus">Choose a destination above, or leave <b>Anywhere</b> selected, then click <b>Find my trip</b>.</div>
   <div id="flightgrid" class="flightgrid" style="display:none"></div>
 </div>
@@ -467,7 +505,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
 
-  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. VoyageAI now places the interpreted trip details directly into one editable control area. Manual changes to travellers, dates, destination and budget persist unless you change the trip request itself. Dates, destination, traveller count and budget can be adjusted there before the Cloudflare API searches Duffel Test Mode offers; flight results now compare returned offers and identify the cheapest fare, best nonstop and VoyageAI pick using price, stops and total travel time; results include total-party pricing, per-person pricing, stop details and dates; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
+  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. VoyageAI now places the interpreted trip details directly into one editable control area. Manual changes to travellers, dates, destination and budget persist unless you change the trip request itself. Dates, destination, traveller count and budget can be adjusted there before the Cloudflare API searches Duffel Test Mode offers; VoyageAI now ranks destinations across flight, hotel, weather, food/lifestyle, safety & comfort and budget fit. Flight scoring uses Duffel Test Mode results; the non-flight destination factors remain illustrative until their live sources are connected; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
 </section>
 </div>
 
@@ -630,6 +668,120 @@ function chooseFlightOptions(data){
   return {cheapest,bestNonstop,voyagePick:best||cheapest};
 }
 
+
+const destinationFactors={
+  'Palm Springs':{hotel:86,weather:95,food:82,safety:84,verdict:'Best overall balance',tradeoff:'Smaller destination, but excellent warm-weather and relaxation fit.'},
+  'San Diego':{hotel:91,weather:89,food:92,safety:86,verdict:'Best city experience',tradeoff:'Excellent all-around fit, usually with less budget headroom.'},
+  'Las Vegas':{hotel:80,weather:91,food:84,safety:74,verdict:'Best budget value',tradeoff:'Strong airfare value, but safety/comfort fit is more mixed.'},
+  'Los Angeles':{hotel:84,weather:88,food:94,safety:76,verdict:'Best food & variety',tradeoff:'Huge choice, but local transportation and location matter a lot.'},
+  'Phoenix':{hotel:83,weather:94,food:80,safety:82,verdict:'Warm-value alternative',tradeoff:'Strong weather and value; less compact for a short getaway.'},
+  'Honolulu':{hotel:90,weather:96,food:88,safety:87,verdict:'Best tropical escape',tradeoff:'Excellent experience fit, but airfare consumes more of the budget.'}
+};
+function factorClass(v){return v>=85?'high':v>=75?'mid':'low';}
+function flightFactor(price,minPrice,maxPrice,main){
+  const priceScore=maxPrice>minPrice ? 100-((price-minPrice)/(maxPrice-minPrice))*30 : 92;
+  const stops=totalStops(main);
+  const stopPenalty=Math.min(20,stops*8);
+  const mins=totalJourneyMins(main);
+  const timePenalty=mins<500?0:mins<800?5:10;
+  return Math.max(55,Math.round(priceScore-stopPenalty-timePenalty));
+}
+function budgetFactor(price,budget){
+  if(!budget) return 80;
+  // Flight share of trip budget: under 30% is excellent; above 50% starts to hurt.
+  const share=price/budget;
+  if(share<=.25) return 96;
+  if(share<=.30) return 92;
+  if(share<=.35) return 87;
+  if(share<=.40) return 82;
+  if(share<=.50) return 74;
+  if(share<=.60) return 64;
+  return 52;
+}
+function toughTripScore(vals){
+  const a=vals.reduce((s,v)=>s+v,0)/vals.length;
+  const g=Math.pow(vals.reduce((p,v)=>p*Math.max(v,1),1),1/vals.length);
+  const weak=Math.min(...vals);
+  let score=.45*g+.30*a+.25*weak;
+  const under80=vals.filter(v=>v<80).length;
+  const under70=vals.filter(v=>v<70).length;
+  score-=under80*1.2+under70*2;
+  return Math.max(45,Math.min(96,Math.round(score)));
+}
+function toggleRankDetail(key){
+  const row=document.getElementById('detail-'+key);
+  if(row) row.classList.toggle('open');
+}
+function renderRankedTrips(results){
+  const budget=Number(document.getElementById('budget').value||2000);
+  const prepared=results.filter(x=>x.data?.offers?.length).map(x=>{
+    const picks=chooseFlightOptions(x.data);
+    const main=picks.voyagePick||x.data.offers[0];
+    return {...x,picks,main,price:numericPrice(main)};
+  });
+  if(!prepared.length) return '';
+  const minPrice=Math.min(...prepared.map(x=>x.price));
+  const maxPrice=Math.max(...prepared.map(x=>x.price));
+  const ranked=prepared.map(x=>{
+    const f=destinationFactors[x.destinationName]||{hotel:80,weather:80,food:80,safety:80,verdict:'Good alternative',tradeoff:'More data needed.'};
+    const flight=flightFactor(x.price,minPrice,maxPrice,x.main);
+    const budgetFit=budgetFactor(x.price,budget);
+    const score=toughTripScore([flight,f.hotel,f.weather,f.food,f.safety,budgetFit]);
+    return {...x,f,flight,budgetFit,score};
+  }).sort((a,b)=>b.score-a.score || a.price-b.price);
+
+  const winner=ranked[0];
+  const wpp=winner.price/Number(document.getElementById('travellers').value||1);
+  const rows=ranked.map((x,i)=>{
+    const key=x.destinationName.replace(/\s+/g,'-');
+    const o=x.main.outbound||{}, r=x.main.return||{};
+    const travellers=Number(document.getElementById('travellers').value||1);
+    return `<tr onclick="toggleRankDetail('${key}')">
+      <td class="ranknum">#${i+1}</td>
+      <td><span class="destname">${x.destinationName}</span><span class="destsub">${x.f.verdict}</span></td>
+      <td><span class="scorecircle">${x.score}</span></td>
+      <td><span class="factor ${factorClass(x.flight)}">${x.flight}</span></td>
+      <td><span class="factor ${factorClass(x.f.hotel)}">${x.f.hotel}</span></td>
+      <td><span class="factor ${factorClass(x.f.weather)}">${x.f.weather}</span></td>
+      <td><span class="factor ${factorClass(x.f.food)}">${x.f.food}</span></td>
+      <td><span class="factor ${factorClass(x.f.safety)}">${x.f.safety}</span></td>
+      <td><span class="factor ${factorClass(x.budgetFit)}">${x.budgetFit}</span></td>
+      <td class="verdict">${i===0?'★ Recommended':x.f.verdict}<small>Click for details</small></td>
+    </tr>
+    <tr id="detail-${key}" class="expandrow">
+      <td colspan="10" class="expandcontent">
+        <div class="detailgrid">
+          <div class="detailbox">
+            <h4>Best flight found</h4>
+            <div class="liveprice">C$${x.price.toFixed(2)} <small>total for ${travellers} · C$${(x.price/travellers).toFixed(2)}/person</small></div>
+            <p><b>${airlineName(x.main)}</b><br>Outbound ${prettyDate(o.departure)}: ${o.from} ${prettyTime(o.departure)} → ${o.to} ${prettyTime(o.arrival)} · ${routeSummary(o).text}<br>Return ${prettyDate(r.departure)}: ${r.from||''} ${prettyTime(r.departure)} → ${r.to||''} ${prettyTime(r.arrival)} · ${routeSummary(r).text}</p>
+          </div>
+          <div class="detailbox">
+            <h4>Why it scored ${x.score}</h4>
+            <p>${x.f.tradeoff}<br><br><b>Flight score ${x.flight}</b> uses the Duffel test offer price, stops and travel time. Hotel, weather, food and safety factors are still illustrative until those live data sources are connected.</p>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="recommendation-shell">
+    <div class="winner-card">
+      <div class="winner-kicker">★ VoyageAI recommendation</div>
+      <div class="winner-main">
+        <div><h3>${winner.destinationName}</h3><p>${winner.f.verdict}. VoyageAI rated every destination across flight quality, hotel quality, weather, food/lifestyle, safety & comfort and budget fit — not airfare alone.</p><div class="score-note">Live Duffel test flight data + illustrative destination factors for this prototype.</div></div>
+        <div class="winner-score"><strong>${winner.score}</strong><span>VOYAGEAI SCORE / 100</span></div>
+      </div>
+    </div>
+    <div class="ranktable-wrap">
+      <table class="ranktable">
+        <thead><tr><th>Rank</th><th>Destination</th><th>Score</th><th>Flight</th><th>Hotel</th><th>Weather</th><th>Food</th><th>Safety</th><th>Budget</th><th>Verdict</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
 function sameOffer(a,b){
   if(!a||!b) return false;
   return numericPrice(a)===numericPrice(b) &&
@@ -711,7 +863,7 @@ async function loadLiveFlights(){
   try{
     const results=await Promise.all(names.map(fetchFlight));
     window.__liveFlightResults=results;
-    grid.innerHTML=results.map(x=>flightCard(x.destinationName,x.data)).join('');
+    grid.innerHTML=renderRankedTrips(results);
     grid.style.display='grid';
     status.style.display='none';
   }catch(err){
