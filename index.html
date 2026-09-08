@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project VoyageAI v1.2 — Smart Search Controls</title>
+<title>Project VoyageAI v1.3 — Smart Trip Request</title>
 <style>
 :root{
   --ink:#172033;--muted:#6c7586;--line:#e6e9ef;--soft:#f7f8fb;--brand:#3157d5;
@@ -132,12 +132,23 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
 @media(max-width:840px){.searchcontrols{grid-template-columns:1fr 1fr}.searchfield.tofield{grid-column:span 2}}
 @media(max-width:520px){.searchcontrols{grid-template-columns:1fr}.searchfield.tofield{grid-column:span 1}}
 
+
+.interpretbox{max-width:860px;margin:10px auto 0;border:1px solid #dfe6f3;background:#fbfcff;border-radius:14px;padding:11px 13px;text-align:left;display:none}
+.interprettitle{font-weight:900;font-size:12px;margin-bottom:7px}
+.interpretgrid{display:flex;flex-wrap:wrap;gap:7px}
+.interpretchip{font-size:10px;border:1px solid #e1e6ef;background:white;border-radius:999px;padding:6px 8px;color:#586277}
+.routebadge{display:inline-block;font-size:9px;font-weight:900;border-radius:999px;padding:5px 7px;margin-top:7px;background:#eef8f1;color:#147a42}
+.routebadge.stop{background:#fff5e7;color:#9a5a00}
+.altbox{margin-top:8px;border-top:1px solid #eef1f5;padding-top:8px;font-size:10px;color:#586277}
+.altbtn{border:1px solid #d9dfeb;background:#fff;border-radius:10px;padding:6px 8px;font-size:10px;font-weight:800;cursor:pointer;margin-top:5px}
+.altbtn:hover{background:#f6f8fc}
+
 </style>
 </head>
 <body>
 <div class="shell">
 <nav>
-  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.2</span></div>
+  <div class="logo">Voyage<span>AI</span><span class="pilot">PILOT v1.3</span></div>
   <div class="navright"><span>My trips</span><button class="ghost" onclick="showWatch()">♡ Watches</button></div>
 </nav>
 
@@ -146,7 +157,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
   <p>VoyageAI learns what matters to you, searches the options and shows the trips that fit you best — then keeps watching the prices.</p>
 
   <div class="ask">
-    <textarea id="prompt">I want to get away next month for 5 days. Two people leaving Vancouver, somewhere warm. My budget is $2,000 and I want a great hotel with vegan restaurants nearby.</textarea>
+    <textarea id="tripRequest" id="prompt">I want to get away next month for 5 days. Two people leaving Vancouver, somewhere warm. My budget is $2,000 and I want a great hotel with vegan restaurants nearby.</textarea>
     <div class="askbar">
       <div class="chips"><span class="chip">✈ Vancouver</span><span class="chip">💰 CAD</span><span class="chip">🌱 Vegan friendly</span></div>
       <button class="primary" onclick="searchTrips()">Find my trip →</button>
@@ -192,7 +203,11 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
       <input id="budget" type="number" min="250" step="50" value="2000" onchange="syncSearchControls()">
     </div>
   </div>
-  <div class="searchhelper">These controls now drive the flight search. Natural-language auto-fill comes next.</div>
+  <div class="searchhelper">VoyageAI can now interpret the trip request and use it to fill these search controls.</div>
+  <div class="interpretbox" id="interpretBox">
+    <div class="interprettitle">VoyageAI understood:</div>
+    <div class="interpretgrid" id="interpretGrid"></div>
+  </div>
 
   <div class="prefbox">
     <div class="togglecard">
@@ -377,7 +392,7 @@ nav{height:70px;display:flex;align-items:center;justify-content:space-between;bo
     </div>
   </div>
 
-  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. The flight panel now calls the VoyageAI Cloudflare API using the departure date, return date, traveller count and destination selected above, and displays Duffel Test Mode offers; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
+  <div class="note"><b>Prototype.</b> Destination cards, hotels, reviews and VoyageAI Scores remain illustrative. The flight panel now calls the VoyageAI Cloudflare API using the interpreted or selected departure date, return date, traveller count and destination, and displays Duffel Test Mode offers with total-party pricing, per-person pricing, stop details and nonstop alternatives when available; these are not live customer-bookable fares. Production safety guidance should use authoritative destination sources and appropriately licensed/permitted hotel review data. VoyageAI should present context and confidence, not guarantee that an area is “safe.”</div>
 </section>
 </div>
 
@@ -459,20 +474,82 @@ async function fetchFlight(destinationName){
   if(!r.ok || !data.success) throw new Error(data?.error?.message || data?.error || 'Flight search failed');
   return {destinationName,data};
 }
+function routeSummary(leg){
+  if(!leg) return {text:'Route details unavailable', badge:'', stop:false};
+  const stops=Number(leg.stops||0);
+  if(stops===0){
+    return {text:'Nonstop', badge:'NONSTOP', stop:false};
+  }
+  const segs=leg.segments||[];
+  const stopNames=[];
+  if(segs.length>1){
+    for(let i=0;i<segs.length-1;i++){
+      const code=segs[i].to;
+      if(code && !stopNames.includes(code)) stopNames.push(code);
+    }
+  }
+  let layoverText='';
+  if(segs.length>1 && segs[0].arrival && segs[1].departure){
+    const a=new Date(segs[0].arrival), b=new Date(segs[1].departure);
+    const mins=Math.max(0,Math.round((b-a)/60000));
+    const h=Math.floor(mins/60), m=mins%60;
+    layoverText=` · ${h?`${h}h `:''}${m}m layover`;
+  }
+  const via=stopNames.length?` via ${stopNames.join(', ')}`:'';
+  return {text:`${stops} stop${stops===1?'':'s'}${via}${layoverText}`, badge:`${stops} STOP${stops===1?'':'S'}`, stop:true};
+}
+function findBestNonstop(data){
+  const offers=(data.offers||[]).filter(o=>(o.outbound?.stops||0)===0 && (o.return?.stops||0)===0);
+  if(!offers.length) return null;
+  return offers.sort((a,b)=>Number(a.price?.display_numeric||a.price?.display||999999)-Number(b.price?.display_numeric||b.price?.display||999999))[0];
+}
 function flightCard(destinationName,data){
   const offer=data.offers?.[0];
   if(!offer) return `<div class="flightcard"><h3>${destinationName}</h3><div class="flightmeta">No test offers returned.</div></div>`;
   const out=offer.outbound||{};
   const ret=offer.return||{};
-  const stops=out.stops===0?'Nonstop':`${out.stops} stop${out.stops===1?'':'s'}`;
-  return `<div class="flightcard">
+  const travellers=Number(document.getElementById('travellers').value||1);
+  const totalNum=Number(String(offer.price.display).replace(/[^0-9.]/g,''))||0;
+  const perPerson=travellers?totalNum/travellers:totalNum;
+  const outRoute=routeSummary(out);
+  const retRoute=routeSummary(ret);
+  const bothNonstop=!outRoute.stop && !retRoute.stop;
+  const nonstop=findBestNonstop(data);
+  let alt='';
+  if(!bothNonstop && nonstop){
+    const nonstopTotal=Number(String(nonstop.price.display).replace(/[^0-9.]/g,''))||0;
+    const diff=nonstopTotal-totalNum;
+    alt=`<div class="altbox"><b>Nonstop option available</b><br>${nonstop.price.display} CAD total for ${travellers} traveller${travellers===1?'':'s'}${diff>0?` · +C$${diff.toFixed(2)} total`:diff<0?` · C$${Math.abs(diff).toFixed(2)} less`:' · same price'}<br><button class="altbtn" onclick="showNonstop('${destinationName}')">View nonstop option →</button></div>`;
+  }else if(!bothNonstop){
+    alt=`<div class="altbox"><b>No nonstop option found in the returned test offers.</b></div>`;
+  }
+  return `<div class="flightcard" data-destination="${destinationName}">
     <h3>${destinationName}</h3>
-    <div class="flightmeta">${offer.airline} · ${stops} · ${prettyDuration(out.duration)}</div>
-    <div class="flightprice">${offer.price.display} <small style="font-size:11px;color:var(--muted)">CAD</small></div>
-    <div class="sourcefare">Source fare ${offer.price.source_amount} ${offer.price.source_currency} · FX ${data.pricing.usd_to_cad_rate}</div>
-    <div class="flightmeta" style="margin-top:9px"><b>Outbound:</b> ${out.from} ${prettyTime(out.departure)} → ${out.to} ${prettyTime(out.arrival)}<br><b>Return:</b> ${ret.from||''} ${prettyTime(ret.departure)} → ${ret.to||''} ${prettyTime(ret.arrival)}</div>
+    <div class="flightmeta">${offer.airline} · Round trip · ${prettyDuration(out.duration)}</div>
+    <div class="flightprice">${offer.price.display} <small style="font-size:11px;color:var(--muted)">CAD total</small></div>
+    <div class="sourcefare">For ${travellers} traveller${travellers===1?'':'s'} · C$${perPerson.toFixed(2)} per person · Source fare ${offer.price.source_amount} ${offer.price.source_currency} · FX ${data.pricing.usd_to_cad_rate}</div>
+    <div class="${bothNonstop?'routebadge':'routebadge stop'}">${bothNonstop?'NONSTOP BOTH WAYS':'STOPS INCLUDED'}</div>
+    <div class="flightmeta" style="margin-top:9px"><b>Outbound:</b> ${out.from} ${prettyTime(out.departure)} → ${out.to} ${prettyTime(out.arrival)} · ${outRoute.text}<br><b>Return:</b> ${ret.from||''} ${prettyTime(ret.departure)} → ${ret.to||''} ${prettyTime(ret.arrival)} · ${retRoute.text}</div>
     <span class="flighttag">Duffel test offer</span>
+    ${alt}
   </div>`;
+}
+function showNonstop(destinationName){
+  const item=window.__liveFlightResults?.find(x=>x.destinationName===destinationName);
+  if(!item) return;
+  const offer=findBestNonstop(item.data);
+  if(!offer){alert('No nonstop option found.');return;}
+  const travellers=Number(document.getElementById('travellers').value||1);
+  const totalNum=Number(String(offer.price.display).replace(/[^0-9.]/g,''))||0;
+  const pp=travellers?totalNum/travellers:totalNum;
+  const o=offer.outbound||{}, r=offer.return||{};
+  alert(`${destinationName} nonstop option
+
+${offer.price.display} CAD total for ${travellers} traveller${travellers===1?'':'s'}
+C$${pp.toFixed(2)} per person
+
+Outbound: ${o.from} ${prettyTime(o.departure)} → ${o.to} ${prettyTime(o.arrival)}
+Return: ${r.from||''} ${prettyTime(r.departure)} → ${r.to||''} ${prettyTime(r.arrival)}`);
 }
 async function loadLiveFlights(){
   const selected=document.getElementById('destination').value;
@@ -486,6 +563,7 @@ async function loadLiveFlights(){
   grid.innerHTML='';
   try{
     const results=await Promise.all(names.map(fetchFlight));
+    window.__liveFlightResults=results;
     grid.innerHTML=results.map(x=>flightCard(x.destinationName,x.data)).join('');
     grid.style.display='grid';
     status.style.display='none';
@@ -501,7 +579,72 @@ function validateSearch(){
   if(p.budget<250) return 'Please enter a trip budget of at least C$250.';
   return '';
 }
+
+function monthNameToIndex(name){
+  const months=['january','february','march','april','may','june','july','august','september','october','november','december'];
+  return months.indexOf(name.toLowerCase());
+}
+function parseTripRequest(){
+  const raw=(document.getElementById('tripRequest')?.value||'').trim();
+  if(!raw) return;
+  const t=raw.toLowerCase();
+  let travellers=null,budget=null,duration=null,destination='Anywhere',origin='YVR';
+  const numWords={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10};
+  let m=t.match(/\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:people|person|travellers|travelers|adults)\b/);
+  if(m) travellers=Number(m[1])||numWords[m[1]];
+  m=t.match(/\$ ?([\d,]+)/);
+  if(m) budget=Number(m[1].replace(/,/g,''));
+  m=t.match(/\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*days?\b/);
+  if(m) duration=Number(m[1])||numWords[m[1]];
+  if(/palm springs/.test(t)) destination='Palm Springs';
+  else if(/san diego/.test(t)) destination='San Diego';
+  else if(/las vegas|vegas/.test(t)) destination='Las Vegas';
+  else if(/anywhere|somewhere/.test(t)) destination='Anywhere';
+  if(/vancouver|\byvr\b/.test(t)) origin='YVR';
+
+  const today=new Date();
+  let dep=new Date(today), ret=null;
+  if(/next month/.test(t)){
+    dep=new Date(today.getFullYear(),today.getMonth()+1,8,12,0,0);
+  }else{
+    const monthNames='january|february|march|april|may|june|july|august|september|october|november|december';
+    const mm=t.match(new RegExp(`\\b(${monthNames})\\b`));
+    if(mm){
+      const idx=monthNameToIndex(mm[1]);
+      let yr=today.getFullYear();
+      if(idx<today.getMonth()) yr++;
+      dep=new Date(yr,idx,8,12,0,0);
+    }else{
+      dep.setDate(dep.getDate()+30);
+    }
+  }
+  ret=new Date(dep); ret.setDate(ret.getDate()+(duration||5));
+  document.getElementById('origin').value=origin;
+  document.getElementById('destination').value=destination;
+  if(document.getElementById('destinationResults')) document.getElementById('destinationResults').value=destination;
+  document.getElementById('departure').value=dep.toISOString().slice(0,10);
+  document.getElementById('returnDate').value=ret.toISOString().slice(0,10);
+  if(travellers) document.getElementById('travellers').value=String(Math.min(6,Math.max(1,travellers)));
+  if(budget) document.getElementById('budget').value=budget;
+  destinationChanged('main');
+  syncSearchControls();
+
+  const chips=[];
+  chips.push(`From ${origin}`);
+  chips.push(`To ${destination}`);
+  chips.push(`${duration||5} days`);
+  chips.push(`${travellers||document.getElementById('travellers').value} travellers`);
+  if(budget) chips.push(`Budget C$${new Intl.NumberFormat('en-CA').format(budget)}`);
+  if(/warm/.test(t)) chips.push('Warm weather');
+  if(/vegan/.test(t)) chips.push('Vegan-friendly');
+  if(/great hotel|excellent hotel|nice hotel|quality hotel/.test(t)) chips.push('High hotel quality');
+  if(/nonstop|non-stop|direct flight/.test(t)) chips.push('Nonstop preferred');
+  const box=document.getElementById('interpretBox'), grid=document.getElementById('interpretGrid');
+  if(box&&grid){grid.innerHTML=chips.map(x=>`<span class="interpretchip">${x}</span>`).join('');box.style.display='block';}
+}
+
 function searchTrips(){
+  parseTripRequest();
   const error=validateSearch();
   if(error){alert(error);return;}
   syncSearchControls();
